@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"errors"
+	"strings"
 	"time"
 )
 
@@ -29,9 +31,26 @@ type StudentRepository interface {
 func NewStudent(fname, lname, uni string,
 	dob time.Time,
 	skills, exp []string,
-	user User, status Status) (*Student, error) {
-	// todo: add business rules
-	student := &Student{
+	user User, status Status) (Student, error) {
+
+	if len(strings.TrimSpace(fname)) == 0 {
+		return Student{}, errors.New("provided firstname can't be empty")
+	}
+
+	if len(strings.TrimSpace(lname)) == 0 {
+		return Student{}, errors.New("provided lastname can't be empty")
+	}
+
+	if len(strings.TrimSpace(uni)) == 0 {
+		return Student{}, errors.New("provided univeristy can't empty")
+	}
+
+	// Maybe add check to see if user is >=18 or >=16 or something?
+	if dob.After(time.Now()) {
+		return Student{}, errors.New("provided date of birth is invalid. it can't be after the current date")
+	}
+
+	return Student{
 		firstname:  fname,
 		lastname:   lname,
 		university: uni,
@@ -40,7 +59,6 @@ func NewStudent(fname, lname, uni string,
 		experience: exp,
 		user:       user,
 		status:     status,
-	}
+	}, nil
 
-	return student, nil
 }

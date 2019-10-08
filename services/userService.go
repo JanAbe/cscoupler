@@ -1,4 +1,4 @@
-package application
+package services
 
 import (
 	"github.com/janabe/cscoupler/domain"
@@ -11,16 +11,10 @@ type UserService struct {
 	UserRepo domain.UserRepository
 }
 
-// Create creates a new Student
-func (u UserService) Create(user *domain.User) error {
+// Register registers a user
+func (u UserService) Register(user *domain.User) error {
 	err := u.UserRepo.Create(user)
 	return err
-}
-
-// FindByID finds a user based on id
-func (u UserService) FindByID(id string) (*domain.User, error) {
-	user, err := u.UserRepo.FindByID(id)
-	return user, err
 }
 
 // FindByEmail finds a user based on email

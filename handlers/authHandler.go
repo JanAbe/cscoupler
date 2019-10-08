@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/janabe/cscoupler/application"
 	"github.com/janabe/cscoupler/database/memory"
 	"github.com/janabe/cscoupler/domain"
+	"github.com/janabe/cscoupler/services"
 	"github.com/janabe/cscoupler/util"
 
 	"github.com/dgrijalva/jwt-go"
@@ -18,7 +18,7 @@ import (
 
 var jwtKey = util.GetJWTSecret("./.secret.json")
 var userRepo = memory.UserRepo{DB: make(map[string]domain.User)}
-var userService = application.UserService{UserRepo: userRepo}
+var userService = services.UserService{UserRepo: userRepo}
 
 // Useronly ...
 var Useronly = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +54,7 @@ var SignupHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = userService.Create(user)
+	err = userService.Register(user)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
