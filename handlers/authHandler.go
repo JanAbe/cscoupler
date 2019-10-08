@@ -9,14 +9,15 @@ import (
 	"time"
 
 	"github.com/janabe/cscoupler/application"
+	"github.com/janabe/cscoupler/database/memory"
 	"github.com/janabe/cscoupler/domain"
+	"github.com/janabe/cscoupler/util"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/janabe/cscoupler/util"
 )
 
 var jwtKey = util.GetJWTSecret("./.secret.json")
-var userRepo = memoryStudentRepo{db: make(map[string]domain.User)}
+var userRepo = memory.UserRepo{DB: make(map[string]domain.User)}
 var userService = application.UserService{UserRepo: userRepo}
 
 // Useronly ...
@@ -27,6 +28,10 @@ var Useronly = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 // SignupHandler is a handler for signup requests, creating a new
 // user with the provided credentials
 var SignupHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		return
+	}
+
 	var creds Credentials
 
 	// check if json is invalid
@@ -64,6 +69,10 @@ var SignupHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 // todo: What i don't understand is how are the responseWriter and Request
 // passed to the signinHandler?
 var SigninHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		return
+	}
+
 	var creds Credentials
 
 	err := json.NewDecoder(r.Body).Decode(&creds)

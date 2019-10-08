@@ -1,0 +1,51 @@
+How to support different roles? atm there is only validation of users
+through JWT. But there needs to be a separation between student-users and
+company-users.
+
+update readme with a section about which endpoints cscoupler has
+
+!!! ------
+should a company have multiple accounts linked to it or not.
+If this isn't the case, only one person can post projects and 
+approach students. If it is the case, i need to find a way to create
+users bound to a company. Maybe through invite-links?
+The main company user creates the company-main-account, setting all info
+regarding the company. Then, he can create invite links to send to colleagues.
+If an account is created from an invite link, the account is bound to the company.
+This account also needs to supply different data when creating the account.
+
+maybe make a Student, Company (is actually company main account), and Representative (is account bound to a company)
+
+But what happens if a student wants to comment on a posted project of a company.
+Does this message get sent to a random representative of this company?
+Or can the user chose one of the representatives that the company has, and sent a message to
+the selected one?
+------ !!! 
+
+create client for cscoupler, probably in a different repo called vue-cscoupler or client-cscoupler
+the only thing is that if client-cscoupler is used, how should other clients be called which are made
+with different technologies / are not webbased. On the other hand, idc
+
+features:
+students can create accounts
+add skills, cv, wants (things they want), university, name, etc.
+
+companies can create an account
+add projects for which they search students
+they can be internship projects or work-projects for students
+    (this should/ can be a flag)
+they can message a student they are interested in, maybe link to a specific project
+they offer if they think the student is suited for that one. Or not if they are just
+interested in the student in general
+
+-------------------------------------------------------
+???How to make sure people don't just spam everyone???
+Maybe add a timer. Someone can only message someone else  
+if he/she looked at their account for 20 sec or something.
+Sounds kinda shitty though
+-------------------------------------------------------
+
+for later:
+maybe add support for the creation of teams for students between themselves.
+a student can create a project with a description, vision, goal, etc. And if other students
+are interested of teaming up, they can respond.
