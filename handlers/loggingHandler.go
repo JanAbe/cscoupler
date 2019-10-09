@@ -10,6 +10,6 @@ import (
 func LoggingHandler(out io.Writer, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		out.Write([]byte(r.URL.String() + ", " + time.Now().String() + "\n"))
-		h.ServeHTTP(w, r) // this runs the handler h
+		h.ServeHTTP(w, r) // this runs handler h
 	})
 }
