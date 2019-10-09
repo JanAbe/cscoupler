@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/janabe/cscoupler/database/memory"
@@ -32,22 +33,22 @@ var SignupHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var creds Credentials
+	var data UserData
 
 	// check if json is invalid
-	err := json.NewDecoder(r.Body).Decode(&creds)
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if userService.EmailAlreadyUsed(creds.Email) {
+	if userService.EmailAlreadyUsed(data.Email) {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	user, err := domain.NewUser(creds.Email, creds.Password)
+	user, err := domain.NewUser(data.Email, data.Password, data.Firstname, data.Lastname)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -73,23 +74,24 @@ var SigninHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var creds Credentials
+	// var creds Credentials
+	var data UserData
 
-	err := json.NewDecoder(r.Body).Decode(&creds)
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Check if account with email exists
-	user, err := userService.FindByEmail(creds.Email)
+	user, err := userService.FindByEmail(strings.ToLower(data.Email))
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	isValid := userService.ValidatePassword(user.HashedPassword, creds.Password)
+	isValid := userService.ValidatePassword(user.HashedPassword, data.Password)
 	if !isValid {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -99,7 +101,7 @@ var SigninHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	// set the expiration time of the JWT (todo: find out what a good time is)
 	expirationTime := time.Now().Add(6 * time.Hour)
 	claims := &Claims{
-		Email: creds.Email,
+		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -170,10 +172,12 @@ func ValidateHandler(h http.Handler) http.Handler {
 
 // ------------- HELP Structs -------------
 
-// Credentials is a struct that maps to the credentials part of the request body
-type Credentials struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+// UserData is a struct that corresponds to incoming user data
+type UserData struct {
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
 }
 
 // Claims is a struct to convey the second part of the JWT (sometimes called payload)

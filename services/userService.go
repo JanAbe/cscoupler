@@ -12,13 +12,13 @@ type UserService struct {
 }
 
 // Register registers a user
-func (u UserService) Register(user *domain.User) error {
+func (u UserService) Register(user domain.User) error {
 	err := u.UserRepo.Create(user)
 	return err
 }
 
 // FindByEmail finds a user based on email
-func (u UserService) FindByEmail(email string) (*domain.User, error) {
+func (u UserService) FindByEmail(email string) (domain.User, error) {
 	user, err := u.UserRepo.FindByEmail(email)
 	return user, err
 }

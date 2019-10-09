@@ -13,7 +13,7 @@ type StudentService struct {
 }
 
 // Create creates a new Student
-func (s StudentService) Create(student *domain.Student) {
+func (s StudentService) Create(student domain.Student) {
 	err := s.studentRepo.Create(student)
 	if err != nil {
 		fmt.Println(err)
@@ -21,7 +21,7 @@ func (s StudentService) Create(student *domain.Student) {
 }
 
 // FindByID finds a student based on an identifier
-func (s StudentService) FindByID(id string) *domain.Student {
+func (s StudentService) FindByID(id string) domain.Student {
 	student, err := s.studentRepo.FindByID(id)
 	if err != nil {
 		fmt.Println(err)
@@ -31,7 +31,7 @@ func (s StudentService) FindByID(id string) *domain.Student {
 }
 
 // FindAll finds all students present
-func (s StudentService) FindAll() []*domain.Student {
+func (s StudentService) FindAll() []domain.Student {
 	students, err := s.studentRepo.FindAll()
 	if err != nil {
 		fmt.Println(err)

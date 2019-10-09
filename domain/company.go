@@ -40,8 +40,8 @@ func NewCompany(name, desc string) (Company, error) {
 
 	return Company{
 		ID:              uuid.New().String(),
-		Name:            name,
-		Description:     desc,
+		Name:            strings.ToLower(name),
+		Description:     strings.ToLower(desc),
 		Branches:        []Address{},
 		Representatives: []Representative{},
 	}, nil
@@ -64,7 +64,7 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 		return Address{}, errors.New("provided street can't be empty")
 	}
 
-	r := regexp.MustCompile(`^\d{4}\s*[a-zA-z]{2}$`)
+	r := regexp.MustCompile(`^\d{4}\s[A-Z]{2}$`)
 	if !r.MatchString(zipcode) {
 		return Address{}, errors.New("provided zipcode is invalid, should be of format 0000 XX, where 0 can be any number and X can be any letter")
 	}
@@ -78,10 +78,10 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 	}
 
 	return Address{
-		Street:  street,
+		Street:  strings.ToLower(street),
 		Zipcode: zipcode,
-		City:    city,
-		Number:  number,
+		City:    strings.ToLower(city),
+		Number:  strings.ToLower(number),
 	}, nil
 }
 
@@ -130,9 +130,9 @@ func NewProject(desc, comp, dur string) (Project, error) {
 
 	return Project{
 		ID:              uuid.New().String(),
-		Description:     desc,
-		Compensation:    comp,
-		Duration:        dur,
+		Description:     strings.ToLower(desc),
+		Compensation:    strings.ToLower(comp),
+		Duration:        strings.ToLower(dur),
 		Recommendations: []string{},
 	}, nil
 }
