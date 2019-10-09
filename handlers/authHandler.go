@@ -1,6 +1,9 @@
 package handlers
 
-// HandlerFunc creates a handler from a normal func
+// This file contains all handlers regarding
+// authorization and authentication,
+// such as ValidateRequests, StudentSignup,
+// RepresentativeSignup, etc.
 
 import (
 	"encoding/json"
@@ -19,7 +22,9 @@ import (
 
 var jwtKey = util.GetJWTSecret("./.secret.json")
 var userRepo = memory.UserRepo{DB: make(map[string]domain.User)}
+var studentRepo = memory.StudentRepo{DB: make(map[string]domain.Student)}
 var userService = services.UserService{UserRepo: userRepo}
+var studentService = services.StudentService{StudentRepo: studentRepo, UserService: userService}
 
 // Useronly ...
 var Useronly = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +66,66 @@ var SignupHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+})
+
+// SignupStudentHandler is a handler for student-signup requests, creating a new
+// student with the provided data
+var SignupStudentHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		return
+	}
+
+	var data StudentData
+
+	// check if json is invalid
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if userService.EmailAlreadyUsed(data.UserData.Email) {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	user, err := domain.NewUser(
+		data.UserData.Email,
+		data.UserData.Password,
+		data.UserData.Firstname,
+		data.UserData.Lastname,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	student, err := domain.NewStudent(
+		data.University,
+		data.Skills,
+		data.Experience,
+		user,
+		domain.Available,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = studentService.Register(student)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(student.ID)
+	fmt.Println(student.ID)
 })
 
 // SigninHandler is a handler for signin requests, creating
@@ -178,6 +243,14 @@ type UserData struct {
 	Password  string `json:"password"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
+}
+
+// StudentData is a struct that corresponds to incoming student data
+type StudentData struct {
+	University string   `json:"university"`
+	Skills     []string `json:"skills"`
+	Experience []string `json:"experience"`
+	UserData   UserData `json:"user"`
 }
 
 // Claims is a struct to convey the second part of the JWT (sometimes called payload)

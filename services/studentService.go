@@ -9,33 +9,43 @@ import (
 // StudentService struct, containing all features
 // the app supports regaring students
 type StudentService struct {
-	studentRepo domain.StudentRepository
+	StudentRepo domain.StudentRepository
+	UserService UserService
 }
 
-// Create creates a new Student
-func (s StudentService) Create(student domain.Student) {
-	err := s.studentRepo.Create(student)
+// Register creates a new Student
+func (s StudentService) Register(student domain.Student) error {
+	err := s.UserService.Register(student.User)
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	err = s.StudentRepo.Create(student)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return err
 }
 
 // FindByID finds a student based on an identifier
-func (s StudentService) FindByID(id string) domain.Student {
-	student, err := s.studentRepo.FindByID(id)
+func (s StudentService) FindByID(id string) (domain.Student, error) {
+	student, err := s.StudentRepo.FindByID(id)
 	if err != nil {
 		fmt.Println(err)
+		return domain.Student{}, err
 	}
 
-	return student
+	return student, nil
 }
 
 // FindAll finds all students present
-func (s StudentService) FindAll() []domain.Student {
-	students, err := s.studentRepo.FindAll()
+func (s StudentService) FindAll() ([]domain.Student, error) {
+	students, err := s.StudentRepo.FindAll()
 	if err != nil {
 		fmt.Println(err)
+		return []domain.Student{}, err
 	}
 
-	return students
+	return students, nil
 }
