@@ -116,7 +116,6 @@ func (s StudentHandler) SignupStudent() http.Handler {
 		}
 
 		json.NewEncoder(w).Encode(student.ID)
-		fmt.Println(student.ID)
 	})
 }
 

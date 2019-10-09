@@ -13,19 +13,21 @@ type StudentService struct {
 	UserService UserService
 }
 
-// Register creates a new Student
+// Register registers a new Student
 func (s StudentService) Register(student domain.Student) error {
 	err := s.UserService.Register(student.User)
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
 
 	err = s.StudentRepo.Create(student)
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
 
-	return err
+	return nil
 }
 
 // FindByID finds a student based on an identifier

@@ -50,9 +50,3 @@ func NewUser(email, password, fname, lname string) (User, error) {
 		Lastname:       strings.ToLower(lname),
 	}, nil
 }
-
-// CheckEmail checks if the email of the user
-// is valid or not.
-func (u *User) CheckEmail() bool {
-	return strings.Contains(u.Email, "@")
-}

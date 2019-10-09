@@ -16,13 +16,20 @@ import (
 
 // todo: look into which structs need an ID field
 
+// CompanyRepository interface
+type CompanyRepository interface {
+	Create(company Company) error
+	FindAll() ([]Company, error)
+	FindByName(name string) (Company, error)
+}
+
 // Company struct conveying a company
 // that is looking for skilled students
 type Company struct {
 	ID              string
 	Name            string
 	Description     string
-	Branches        []Address
+	Locations       []Address
 	Representatives []Representative
 }
 
@@ -42,7 +49,7 @@ func NewCompany(name, desc string) (Company, error) {
 		ID:              uuid.New().String(),
 		Name:            strings.ToLower(name),
 		Description:     strings.ToLower(desc),
-		Branches:        []Address{},
+		Locations:       []Address{},
 		Representatives: []Representative{},
 	}, nil
 }
@@ -92,6 +99,20 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 type Representative struct {
 	ID       string
 	Position string
+	User     User
+}
+
+// NewRepresentative creates a new representative based on the provided input
+func NewRepresentative(pos string, user User) (Representative, error) {
+	if len(strings.TrimSpace(pos)) == 0 {
+		return Representative{}, errors.New("provided position can't be empty")
+	}
+
+	return Representative{
+		ID:       uuid.New().String(),
+		Position: strings.ToLower(pos),
+		User:     user,
+	}, nil
 }
 
 // Project struct conveying a

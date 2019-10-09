@@ -1,0 +1,126 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/janabe/cscoupler/domain"
+	e "github.com/janabe/cscoupler/errors"
+	"github.com/janabe/cscoupler/services"
+)
+
+// Possbile format for invite-links: https://cscoupler.com/representative/invite/f7de3a1d-68a6-4f15-bd3d-2ef21242fabf
+
+// CompanyHandler struct containing all
+// company related handler funcs
+type CompanyHandler struct {
+	CompanyService services.CompanyService
+	AuthHandler    AuthHandler
+	Path           string
+}
+
+// CompanyData is a struct that corresponds to incoming company data
+type CompanyData struct {
+	Name            string               `json:"name"`
+	Description     string               `json:"description"`
+	Locations       []LocationData       `json:"locations"`
+	Representatives []RepresentativeData `json:"representatives"`
+}
+
+// LocationData is a struct that corresponds to incoming location data
+// of companies
+type LocationData struct {
+	Street  string `json:"street"`
+	Zipcode string `json:"zipcode"`
+	City    string `json:"city"`
+	Number  string `json:"number"`
+}
+
+// RepresentativeData is a struct that corresponds to incoming
+// representative data
+type RepresentativeData struct {
+	Position string   `json:"position"`
+	UserData UserData `json:"user"`
+}
+
+// SignupCompany signs up a company and the main representative
+// of this company
+func (c CompanyHandler) SignupCompany() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			return
+		}
+
+		var data CompanyData
+
+		// check if json is invalid
+		err := json.NewDecoder(r.Body).Decode(&data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		company, err := domain.NewCompany(data.Name, data.Description)
+		for _, l := range data.Locations {
+			location, err := domain.NewAddress(l.Street, l.Zipcode, l.City, l.Number)
+			if err != nil {
+				fmt.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			company.Locations = append(
+				company.Locations,
+				location,
+			)
+		}
+
+		if len(data.Representatives) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		mainRepresentative := data.Representatives[0]
+		user, err := domain.NewUser(
+			mainRepresentative.UserData.Email,
+			mainRepresentative.UserData.Password,
+			mainRepresentative.UserData.Firstname,
+			mainRepresentative.UserData.Lastname,
+		)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		representative, err := domain.NewRepresentative(
+			mainRepresentative.Position,
+			user,
+		)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		company.Representatives = append(company.Representatives, representative)
+
+		err = c.CompanyService.Register(company)
+		if err == e.ErrorEmailAlreadyUsed || err == e.ErrorCompanyNameAlreadyUsed {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		json.NewEncoder(w).Encode(company.ID)
+	})
+}
+
+// RegisterHandlers registers all company related handlers
+func (c CompanyHandler) RegisterHandlers() {
+	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
+}
