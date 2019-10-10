@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
@@ -77,7 +78,9 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			)
 		}
 
-		if len(data.Representatives) == 0 {
+		// There should be 1 representative sent
+		// when creating a company, the main representative.
+		if len(data.Representatives) != 1 {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -120,7 +123,30 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 	})
 }
 
+// FetchCompanyByID fetches a company based on ID
+// path = /companies/... where the dots are a company ID
+func (c CompanyHandler) FetchCompanyByID() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			return
+		}
+
+		id := strings.TrimPrefix(r.URL.Path, c.Path)
+		company, err := c.CompanyService.FindByID(id)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		companyData := ToCompanyData(company)
+
+		json.NewEncoder(w).Encode(companyData)
+	})
+}
+
 // RegisterHandlers registers all company related handlers
 func (c CompanyHandler) RegisterHandlers() {
+	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate(c.FetchCompanyByID())))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
 }

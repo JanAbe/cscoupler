@@ -20,6 +20,7 @@ import (
 type CompanyRepository interface {
 	Create(company Company) error
 	FindAll() ([]Company, error)
+	FindByID(id string) (Company, error)
 	FindByName(name string) (Company, error)
 }
 

@@ -57,6 +57,16 @@ func (c CompanyService) Register(company domain.Company) error {
 	return nil
 }
 
+// FindByID finds a company based on ID
+func (c CompanyService) FindByID(id string) (domain.Company, error) {
+	company, err := c.CompanyRepo.FindByID(id)
+	if err != nil {
+		return domain.Company{}, err
+	}
+
+	return company, nil
+}
+
 // NameAlreadyUsed checks if a company name already exists or not
 func (c CompanyService) NameAlreadyUsed(name string) bool {
 	_, err := c.CompanyRepo.FindByName(name)

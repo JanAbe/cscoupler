@@ -17,6 +17,15 @@ func (c CompanyRepo) Create(company domain.Company) error {
 	return nil
 }
 
+// FindByID ...
+func (c CompanyRepo) FindByID(id string) (domain.Company, error) {
+	if company, ok := c.DB[id]; ok {
+		return company, nil
+	}
+
+	return domain.Company{}, errors.New("no company with id: " + id)
+}
+
 // FindByName ...
 func (c CompanyRepo) FindByName(name string) (domain.Company, error) {
 	for _, company := range c.DB {
