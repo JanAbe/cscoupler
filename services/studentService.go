@@ -16,6 +16,8 @@ type StudentService struct {
 
 // Register registers a new Student
 func (s StudentService) Register(student domain.Student) error {
+	// todo: maybe place this email check inside userService,
+	// this makes the most sense....
 	if s.UserService.EmailAlreadyUsed(student.User.Email) {
 		return e.ErrorEmailAlreadyUsed
 	}

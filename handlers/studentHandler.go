@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/janabe/cscoupler/domain"
+	e "github.com/janabe/cscoupler/errors"
 	"github.com/janabe/cscoupler/services"
 )
 
@@ -72,6 +73,12 @@ func (s StudentHandler) SignupStudent() http.Handler {
 		}
 
 		err = s.StudentService.Register(student)
+		if err == e.ErrorEmailAlreadyUsed {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)

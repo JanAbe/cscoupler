@@ -86,6 +86,12 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 			return
 		}
 
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		json.NewEncoder(w).Encode(representative.ID)
 	})
 }
