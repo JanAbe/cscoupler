@@ -14,7 +14,7 @@ type CompanyService struct {
 	UserService UserService
 }
 
-// Register registers a new company
+// Register registers a new company and their main representative
 func (c CompanyService) Register(company domain.Company) error {
 
 	// !!!!!
@@ -65,6 +65,16 @@ func (c CompanyService) FindByID(id string) (domain.Company, error) {
 	}
 
 	return company, nil
+}
+
+// Exists checks if a company exists with the provided id
+func (c CompanyService) Exists(id string) bool {
+	_, err := c.FindByID(id)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 // NameAlreadyUsed checks if a company name already exists or not

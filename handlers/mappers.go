@@ -28,7 +28,8 @@ func ToCompanyData(c d.Company) CompanyData {
 
 	for _, r := range c.Representatives {
 		reprData := RepresentativeData{
-			Position: r.Position,
+			Position:  r.Position,
+			CompanyID: r.CompanyID,
 			UserData: UserData{
 				Email:     r.User.Email,
 				Firstname: r.User.Firstname,
@@ -57,4 +58,20 @@ func ToStudentData(s d.Student) StudentData {
 	}
 
 	return studentData
+}
+
+// ToRepresentativeData maps a representative domain struct
+// to a representativeData struct
+func ToRepresentativeData(r d.Representative) RepresentativeData {
+	representativeData := RepresentativeData{
+		Position:  r.Position,
+		CompanyID: r.CompanyID,
+		UserData: UserData{
+			Email:     r.User.Email,
+			Firstname: r.User.Firstname,
+			Lastname:  r.User.Lastname,
+		},
+	}
+
+	return representativeData
 }

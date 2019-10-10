@@ -93,26 +93,34 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 	}, nil
 }
 
+// RepresentativeRepository interface
+type RepresentativeRepository interface {
+	Create(representative Representative) error
+	FindByID(id string) (Representative, error)
+}
+
 // Representative struct conveying a
 // representative/employee of a company
 // that is looking in name of the company
 // for students
 type Representative struct {
-	ID       string
-	Position string
-	User     User
+	ID        string
+	Position  string
+	User      User
+	CompanyID string
 }
 
 // NewRepresentative creates a new representative based on the provided input
-func NewRepresentative(pos string, user User) (Representative, error) {
+func NewRepresentative(pos, companyID string, user User) (Representative, error) {
 	if len(strings.TrimSpace(pos)) == 0 {
 		return Representative{}, errors.New("provided position can't be empty")
 	}
 
 	return Representative{
-		ID:       uuid.New().String(),
-		Position: strings.ToLower(pos),
-		User:     user,
+		ID:        uuid.New().String(),
+		Position:  strings.ToLower(pos),
+		User:      user,
+		CompanyID: companyID,
 	}, nil
 }
 

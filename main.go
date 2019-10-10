@@ -22,10 +22,12 @@ func main() {
 	userRepo := memory.UserRepo{DB: make(map[string]domain.User)}
 	studentRepo := memory.StudentRepo{DB: make(map[string]domain.Student)}
 	companyRepo := memory.CompanyRepo{DB: make(map[string]domain.Company)}
+	representativeRepo := memory.RepresentativeRepo{DB: make(map[string]domain.Representative)}
 
 	userService := services.UserService{UserRepo: userRepo}
 	studentService := services.StudentService{StudentRepo: studentRepo, UserService: userService}
 	companyService := services.CompanyService{CompanyRepo: companyRepo, UserService: userService}
+	representativeService := services.RepresentativeService{RepresentativeRepo: representativeRepo, CompanyService: companyService, UserService: userService}
 
 	authHandler := handlers.AuthHandler{
 		JWTKey:      util.GetJWTSecret("./.secret.json"),
@@ -44,9 +46,16 @@ func main() {
 		Path:           "/companies/",
 	}
 
+	representativeHandler := handlers.RepresentativeHandler{
+		RepresentativeService: representativeService,
+		AuthHandler:           authHandler,
+		Path:                  "/representatives/",
+	}
+
 	authHandler.RegisterHandlers()
 	studentHandler.RegisterHandlers()
 	companyHandler.RegisterHandlers()
+	representativeHandler.RegisterHandlers()
 
 	log.Fatal(http.ListenAndServe(":3000", nil))
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/janabe/cscoupler/services"
 )
 
-// Possbile format for invite-links: https://cscoupler.com/representative/invite/f7de3a1d-68a6-4f15-bd3d-2ef21242fabf
-
 // CompanyHandler struct containing all
 // company related handler funcs
 type CompanyHandler struct {
@@ -39,13 +37,6 @@ type LocationData struct {
 	Number  string `json:"number"`
 }
 
-// RepresentativeData is a struct that corresponds to incoming
-// representative data
-type RepresentativeData struct {
-	Position string   `json:"position"`
-	UserData UserData `json:"user"`
-}
-
 // SignupCompany signs up a company and the main representative
 // of this company
 func (c CompanyHandler) SignupCompany() http.Handler {
@@ -59,6 +50,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		// check if json is invalid
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -101,6 +93,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 
 		representative, err := domain.NewRepresentative(
 			mainRepresentative.Position,
+			company.ID,
 			user,
 		)
 

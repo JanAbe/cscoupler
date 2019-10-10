@@ -39,6 +39,7 @@ func (s StudentHandler) SignupStudent() http.Handler {
 		// check if json is invalid
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
