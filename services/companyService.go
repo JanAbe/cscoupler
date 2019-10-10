@@ -10,8 +10,8 @@ import (
 // CompanyService struct, containing all features
 // the app supports regarding companies
 type CompanyService struct {
-	CompanyRepo domain.CompanyRepository
-	UserService UserService
+	CompanyRepo           domain.CompanyRepository
+	RepresentativeService *RepresentativeService
 }
 
 // Register registers a new company and their main representative
@@ -32,23 +32,13 @@ func (c CompanyService) Register(company domain.Company) error {
 		return e.ErrorCompanyNameAlreadyUsed
 	}
 
-	// Only one representative, the main account, is present when creating
-	// a company
-	if c.UserService.EmailAlreadyUsed(company.Representatives[0].User.Email) {
-		return e.ErrorEmailAlreadyUsed
-	}
-
-	// ok,but what happens if everything goeds right for the
-	// representative, and this gets added.
-	// But something goes wrong for the company
-	// Then there's a representative in the db, but no company...
-	err := c.UserService.Register(company.Representatives[0].User)
+	err := c.CompanyRepo.Create(company)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
-	err = c.CompanyRepo.Create(company)
+	err = c.RepresentativeService.Register(company.Representatives[0])
 	if err != nil {
 		fmt.Println(err)
 		return err

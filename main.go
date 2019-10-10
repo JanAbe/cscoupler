@@ -24,10 +24,26 @@ func main() {
 	companyRepo := memory.CompanyRepo{DB: make(map[string]domain.Company)}
 	representativeRepo := memory.RepresentativeRepo{DB: make(map[string]domain.Representative)}
 
-	userService := services.UserService{UserRepo: userRepo}
-	studentService := services.StudentService{StudentRepo: studentRepo, UserService: userService}
-	companyService := services.CompanyService{CompanyRepo: companyRepo, UserService: userService}
-	representativeService := services.RepresentativeService{RepresentativeRepo: representativeRepo, CompanyService: companyService, UserService: userService}
+	userService := services.UserService{
+		UserRepo: userRepo,
+	}
+
+	studentService := services.StudentService{
+		StudentRepo: studentRepo,
+		UserService: userService,
+	}
+
+	companyService := services.CompanyService{
+		CompanyRepo: companyRepo,
+	}
+
+	representativeService := services.RepresentativeService{
+		RepresentativeRepo: representativeRepo,
+		CompanyService:     companyService,
+		UserService:        userService,
+	}
+
+	companyService.RepresentativeService = &representativeService
 
 	authHandler := handlers.AuthHandler{
 		JWTKey:      util.GetJWTSecret("./.secret.json"),
