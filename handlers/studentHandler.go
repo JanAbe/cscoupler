@@ -27,29 +27,6 @@ type StudentData struct {
 	UserData   UserData `json:"user"`
 }
 
-// FetchStudentByID fetches a student based on ID
-// path = /students/... where the dots are a student ID
-func (s StudentHandler) FetchStudentByID() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			return
-		}
-
-		id := strings.TrimPrefix(r.URL.Path, s.Path)
-		student, err := s.StudentService.FindByID(id)
-
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		studentData := ToStudentData(student)
-
-		json.NewEncoder(w).Encode(studentData)
-	})
-}
-
 // SignupStudent signs up a new student
 func (s StudentHandler) SignupStudent() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,6 +84,29 @@ func (s StudentHandler) SignupStudent() http.Handler {
 		}
 
 		json.NewEncoder(w).Encode(student.ID)
+	})
+}
+
+// FetchStudentByID fetches a student based on ID
+// path = /students/... where the dots are a student ID
+func (s StudentHandler) FetchStudentByID() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			return
+		}
+
+		id := strings.TrimPrefix(r.URL.Path, s.Path)
+		student, err := s.StudentService.FindByID(id)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		studentData := ToStudentData(student)
+
+		json.NewEncoder(w).Encode(studentData)
 	})
 }
 
