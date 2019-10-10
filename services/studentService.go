@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/janabe/cscoupler/domain"
+	e "github.com/janabe/cscoupler/errors"
 )
 
 // StudentService struct, containing all features
@@ -15,6 +16,10 @@ type StudentService struct {
 
 // Register registers a new Student
 func (s StudentService) Register(student domain.Student) error {
+	if s.UserService.EmailAlreadyUsed(student.User.Email) {
+		return e.ErrorEmailAlreadyUsed
+	}
+
 	err := s.UserService.Register(student.User)
 	if err != nil {
 		fmt.Println(err)

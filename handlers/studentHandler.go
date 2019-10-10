@@ -44,12 +44,6 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			return
 		}
 
-		if s.AuthHandler.UserService.EmailAlreadyUsed(data.UserData.Email) {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-
 		user, err := domain.NewUser(
 			data.UserData.Email,
 			data.UserData.Password,
