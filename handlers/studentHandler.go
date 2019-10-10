@@ -44,16 +44,7 @@ func (s StudentHandler) FetchStudentByID() http.Handler {
 			return
 		}
 
-		studentData := StudentData{
-			University: student.University,
-			Skills:     student.Skills,
-			Experience: student.Experience,
-			UserData: UserData{
-				Email:     student.User.Email,
-				Firstname: student.User.Firstname,
-				Lastname:  student.User.Lastname,
-			},
-		}
+		studentData := ToStudentData(student)
 
 		json.NewEncoder(w).Encode(studentData)
 	})

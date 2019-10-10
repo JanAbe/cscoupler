@@ -8,7 +8,7 @@ import (
 // and vice versa
 
 // ToCompanyData maps a company domain struct to
-// the companyData struct
+// a companyData struct
 func ToCompanyData(c d.Company) CompanyData {
 	companyData := CompanyData{
 		Name:        c.Name,
@@ -40,4 +40,21 @@ func ToCompanyData(c d.Company) CompanyData {
 	}
 
 	return companyData
+}
+
+// ToStudentData maps a student domain struct to
+// a studentData struct
+func ToStudentData(s d.Student) StudentData {
+	studentData := StudentData{
+		University: s.University,
+		Skills:     s.Skills,
+		Experience: s.Experience,
+		UserData: UserData{
+			Email:     s.User.Email,
+			Firstname: s.User.Firstname,
+			Lastname:  s.User.Lastname,
+		},
+	}
+
+	return studentData
 }
