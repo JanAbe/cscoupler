@@ -16,6 +16,7 @@ import (
 // representative related handler funcs
 type RepresentativeHandler struct {
 	RepresentativeService services.RepresentativeService
+	InviteLinkService     services.InviteLinkService
 	AuthHandler           AuthHandler
 	Path                  string
 }
@@ -36,6 +37,17 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 		if req.Method != "POST" {
 			return
 		}
+
+		// this is the handler for requests that come from the url
+		// that are created by the invitelinks generator function
+		// TODO IMPORTANT !!!!!!!!!!!!!!!
+		// todo:this needs to be extended:
+		/*
+			the path should be /signup/representatives/invite/<[companyID]>/<[inviteID]>
+			or something. Because otherwise there is no way to verify the inviteLink.
+			Someone could otherwise just create the url to go to the page himself, as
+			only the companyID would be necessary.
+		*/
 
 		companyID := strings.TrimPrefix(req.URL.Path, "/signup"+r.Path+"invite/")
 		var data RepresentativeData
@@ -117,8 +129,41 @@ func (r RepresentativeHandler) FetchRepresentativeByID() http.Handler {
 	})
 }
 
+// MakeInviteLink makes an invite link for the representative to sent
+// to colleagues.
+// Created invite link format: /signup/representatives/invite/<[companyID]>
+// don't know if the url below is the best format for this request.
+// /representatives/invitelink/[representativeID] = used to create and get an invite link
+func (r RepresentativeHandler) MakeInviteLink() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "POST" {
+			return
+		}
+
+		representativeID := strings.TrimPrefix(req.URL.Path, r.Path+"invitelink/")
+
+		repr, err := r.RepresentativeService.FindByID(representativeID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		inviteLink, err := r.InviteLinkService.CreateRepresentativeInvite(r.Path, repr)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError) // or StatusBadRequest?
+			return
+		}
+
+		json.NewEncoder(w).Encode(inviteLink)
+	})
+}
+
 // RegisterHandlers registers all representative related handlers
 func (r RepresentativeHandler) RegisterHandlers() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate(r.FetchRepresentativeByID())))
+	// todo: update template to /signup/representatives/invite/[companyID]/[inviteID] or something else like this
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))
+	http.Handle(r.Path+"invitelink/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(r.MakeInviteLink())))
 }

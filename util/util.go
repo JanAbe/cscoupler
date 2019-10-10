@@ -28,3 +28,6 @@ func GetJWTSecret(filepath string) []byte {
 type jwtSecret struct {
 	JWTSecret string `json:"jwtsecret"`
 }
+
+// URL is the base URL to the webserver
+var URL = "http://localhost:3000"
