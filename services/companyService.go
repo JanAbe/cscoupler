@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
 )
@@ -22,13 +20,11 @@ func (c CompanyService) Register(company domain.Company) error {
 
 	err := c.CompanyRepo.Create(company)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	err = c.RepresentativeService.Register(company.Representatives[0])
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 

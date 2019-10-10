@@ -1,8 +1,10 @@
 package services
 
 import (
-	"github.com/janabe/cscoupler/domain"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/janabe/cscoupler/domain"
+	e "github.com/janabe/cscoupler/errors"
 )
 
 // UserService struct, containing all features
@@ -13,6 +15,10 @@ type UserService struct {
 
 // Register registers a user
 func (u UserService) Register(user domain.User) error {
+	if u.EmailAlreadyUsed(user.Email) {
+		return e.ErrorEmailAlreadyUsed
+	}
+
 	err := u.UserRepo.Create(user)
 	return err
 }

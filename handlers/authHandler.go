@@ -51,6 +51,7 @@ func (a AuthHandler) Signin() http.Handler {
 
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

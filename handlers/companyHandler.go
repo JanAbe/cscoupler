@@ -56,6 +56,12 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		}
 
 		company, err := domain.NewCompany(data.Name, data.Description)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		for _, l := range data.Locations {
 			location, err := domain.NewAddress(l.Street, l.Zipcode, l.City, l.Number)
 			if err != nil {
