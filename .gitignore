@@ -31,3 +31,5 @@
 .history
 
 .secret*
+/server/key.pem
+/server/cert.pem
