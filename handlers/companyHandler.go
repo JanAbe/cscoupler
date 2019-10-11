@@ -145,8 +145,8 @@ func (c CompanyHandler) FetchCompanyByID() http.Handler {
 	})
 }
 
-// RegisterHandlers registers all company related handlers
-func (c CompanyHandler) RegisterHandlers() {
+// Register registers all company related handlers
+func (c CompanyHandler) Register() {
 	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate(c.FetchCompanyByID())))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
 }

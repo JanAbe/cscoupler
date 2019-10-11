@@ -144,7 +144,7 @@ func (a AuthHandler) Validate(h http.Handler) http.Handler {
 	})
 }
 
-// RegisterHandlers registers all authentication related handlers
-func (a AuthHandler) RegisterHandlers() {
+// Register registers all authentication related handlers
+func (a AuthHandler) Register() {
 	http.Handle("/signin", LoggingHandler(os.Stdout, a.Signin()))
 }

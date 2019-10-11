@@ -181,8 +181,8 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 	})
 }
 
-// RegisterHandlers registers all representative related handlers
-func (r RepresentativeHandler) RegisterHandlers() {
+// Register registers all representative related handlers
+func (r RepresentativeHandler) Register() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate(r.FetchRepresentativeByID())))
 	// todo: update template to /signup/representatives/invite/[companyID]/[inviteID] or something else like this
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))

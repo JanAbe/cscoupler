@@ -49,3 +49,11 @@ for later:
 maybe add support for the creation of teams for students between themselves.
 a student can create a project with a description, vision, goal, etc. And if other students
 are interested of teaming up, they can respond.
+
+
+
+
+notes:
+
+!!!
+HandlerFunc creates a handler from a normal func
