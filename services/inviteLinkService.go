@@ -45,3 +45,13 @@ func (i InviteLinkService) FindByID(id string) (d.InviteLink, error) {
 
 	return inviteLink, nil
 }
+
+// Update updates the invitelink
+func (i InviteLinkService) Update(inviteLink d.InviteLink) error {
+	err := i.InviteLinkRepo.Update(inviteLink)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

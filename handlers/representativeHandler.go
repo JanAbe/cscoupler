@@ -38,22 +38,33 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 			return
 		}
 
-		// this is the handler for requests that come from the url
-		// that are created by the invitelinks generator function
-		// TODO IMPORTANT !!!!!!!!!!!!!!!
-		// todo:this needs to be extended:
-		/*
-			the path should be /signup/representatives/invite/<[companyID]>/<[inviteID]>
-			or something. Because otherwise there is no way to verify the inviteLink.
-			Someone could otherwise just create the url to go to the page himself, as
-			only the companyID would be necessary.
-		*/
+		ids := strings.TrimPrefix(req.URL.Path, "/signup"+r.Path+"invite/")
+		companyID := strings.Split(ids, "/")[0]
+		inviteID := strings.Split(ids, "/")[1]
 
-		companyID := strings.TrimPrefix(req.URL.Path, "/signup"+r.Path+"invite/")
+		inviteLink, err := r.InviteLinkService.FindByID(inviteID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if inviteLink.HasExpired() {
+			// what to return if an invitelink has expired
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if inviteLink.HasBeenUsed() {
+			// what to return if an invitelink has been used already
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		var data RepresentativeData
 
 		// check if json is invalid
-		err := json.NewDecoder(req.Body).Decode(&data)
+		err = json.NewDecoder(req.Body).Decode(&data)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -104,6 +115,15 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 			return
 		}
 
+		inviteLink.Used = true
+		err = r.InviteLinkService.Update(inviteLink)
+		if err != nil {
+			fmt.Println(err)
+			// which status to return?
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		json.NewEncoder(w).Encode(representative.ID)
 	})
 }
@@ -140,6 +160,7 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 			return
 		}
 
+		// or should the representative ID be sent as json instead of in URL
 		representativeID := strings.TrimPrefix(req.URL.Path, r.Path+"invitelink/")
 
 		repr, err := r.RepresentativeService.FindByID(representativeID)
@@ -152,7 +173,7 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 		inviteLink, err := r.InviteLinkService.CreateRepresentativeInvite(r.Path, repr)
 		if err != nil {
 			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError) // or StatusBadRequest?
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 

@@ -23,6 +23,7 @@ func main() {
 	studentRepo := memory.StudentRepo{DB: make(map[string]domain.Student)}
 	companyRepo := memory.CompanyRepo{DB: make(map[string]domain.Company)}
 	representativeRepo := memory.RepresentativeRepo{DB: make(map[string]domain.Representative)}
+	inviteLinkRepo := memory.InviteLinkRepo{DB: make(map[string]domain.InviteLink)}
 
 	userService := services.UserService{
 		UserRepo: userRepo,
@@ -41,6 +42,10 @@ func main() {
 		RepresentativeRepo: representativeRepo,
 		CompanyService:     companyService,
 		UserService:        userService,
+	}
+
+	inviteLinkService := services.InviteLinkService{
+		InviteLinkRepo: inviteLinkRepo,
 	}
 
 	companyService.RepresentativeService = &representativeService
@@ -64,6 +69,7 @@ func main() {
 
 	representativeHandler := handlers.RepresentativeHandler{
 		RepresentativeService: representativeService,
+		InviteLinkService:     inviteLinkService,
 		AuthHandler:           authHandler,
 		Path:                  "/representatives/",
 	}

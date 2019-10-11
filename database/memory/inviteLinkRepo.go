@@ -25,3 +25,9 @@ func (i InviteLinkRepo) FindByID(id string) (domain.InviteLink, error) {
 
 	return domain.InviteLink{}, errors.New("no invitelink with id: " + id)
 }
+
+// Update ...
+func (i InviteLinkRepo) Update(inviteLink domain.InviteLink) error {
+	i.DB[inviteLink.ID] = inviteLink
+	return nil
+}

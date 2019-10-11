@@ -118,6 +118,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
+		fmt.Println(representative.ID)
 		json.NewEncoder(w).Encode(company.ID)
 	})
 }
