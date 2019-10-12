@@ -34,7 +34,8 @@ type UserData struct {
 
 // Claims is a struct to convey the second part of the JWT (sometimes called payload)
 type Claims struct {
-	Email string
+	Email  string
+	UserID string
 	jwt.StandardClaims
 }
 
@@ -74,7 +75,8 @@ func (a AuthHandler) Signin() http.Handler {
 		// set the expiration time of the JWT (todo: find out what a good time is)
 		expirationTime := time.Now().Add(6 * time.Hour)
 		claims := &Claims{
-			Email: user.Email,
+			Email:  user.Email,
+			UserID: user.ID,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: expirationTime.Unix(),
 			},
@@ -89,7 +91,6 @@ func (a AuthHandler) Signin() http.Handler {
 			return
 		}
 
-		// add user id / email in the cookie
 		http.SetCookie(w, &http.Cookie{
 			Name:    "token",
 			Value:   tokenString,
@@ -101,9 +102,10 @@ func (a AuthHandler) Signin() http.Handler {
 
 // Validate returns a handler used to secure endpoints.
 // It validates incoming requests by checking if the user has a valid
-// token and is thus allowed to call this endpoint or not.
+// token and the correct role, and is thus allowed to call this endpoint or not.
 // If the token is valid, h.serveHTTP() gets called which means the page is shown.
-func (a AuthHandler) Validate(h http.Handler) http.Handler {
+// If the role param is left empty (""), all roles are allowed to call this endpoint.
+func (a AuthHandler) Validate(role string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
 		if err != nil {
@@ -138,6 +140,27 @@ func (a AuthHandler) Validate(h http.Handler) http.Handler {
 		if !token.Valid {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
+		}
+
+		claims := token.Claims.(jwt.MapClaims)
+		userID, ok := claims["Email"].(string)
+		if !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		user, err := a.UserService.FindByEmail(userID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if role != "" {
+			if user.Role != role {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
 		}
 
 		// If jwt is valid, serve the webpage of h. Aka run handler h

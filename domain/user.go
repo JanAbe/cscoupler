@@ -15,6 +15,7 @@ type User struct {
 	HashedPassword string
 	Firstname      string
 	Lastname       string
+	Role           string
 }
 
 // UserRepository interface
@@ -26,7 +27,7 @@ type UserRepository interface {
 }
 
 // NewUser creates a new user or returns an error when the hashing of the password fails
-func NewUser(email, password, fname, lname string) (User, error) {
+func NewUser(email, password, fname, lname, role string) (User, error) {
 	id := uuid.New().String()
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -48,5 +49,6 @@ func NewUser(email, password, fname, lname string) (User, error) {
 		HashedPassword: string(hash),
 		Firstname:      strings.ToLower(fname),
 		Lastname:       strings.ToLower(lname),
+		Role:           role,
 	}, nil
 }

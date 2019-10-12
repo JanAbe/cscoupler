@@ -50,6 +50,7 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			data.UserData.Password,
 			data.UserData.Firstname,
 			data.UserData.Lastname,
+			domain.StudentRole,
 		)
 
 		if err != nil {
@@ -114,6 +115,6 @@ func (s StudentHandler) FetchStudentByID() http.Handler {
 
 // Register registers all student related handlers
 func (s StudentHandler) Register() {
-	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate(s.FetchStudentByID())))
+	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchStudentByID())))
 	http.Handle("/signup/student", LoggingHandler(os.Stdout, s.SignupStudent()))
 }

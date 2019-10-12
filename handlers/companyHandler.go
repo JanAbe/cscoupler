@@ -89,6 +89,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			mainRepresentative.UserData.Password,
 			mainRepresentative.UserData.Firstname,
 			mainRepresentative.UserData.Lastname,
+			domain.RepresentativeRole,
 		)
 
 		if err != nil {
@@ -148,6 +149,6 @@ func (c CompanyHandler) FetchCompanyByID() http.Handler {
 
 // Register registers all company related handlers
 func (c CompanyHandler) Register() {
-	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate(c.FetchCompanyByID())))
+	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate("", c.FetchCompanyByID())))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
 }
