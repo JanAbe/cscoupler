@@ -89,6 +89,7 @@ func (a AuthHandler) Signin() http.Handler {
 			return
 		}
 
+		// add user id / email in the cookie
 		http.SetCookie(w, &http.Cookie{
 			Name:    "token",
 			Value:   tokenString,

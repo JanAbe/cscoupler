@@ -30,7 +30,7 @@ func NewServer() *Server {
 // Run runs the server
 func (s *Server) Run() {
 	fmt.Println("Running server, listening on port 3000...")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	log.Fatal(http.ListenAndServeTLS(":3000", "./server/cert.pem", "./server/key.pem", nil))
 }
 
 // registerHandlers registers all handlers of Server s
