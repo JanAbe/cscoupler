@@ -3,8 +3,6 @@ package domain
 import (
 	"errors"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // Student struct
@@ -21,12 +19,13 @@ type Student struct {
 // StudentRepository interface
 type StudentRepository interface {
 	Create(student Student) error
+	Update(student Student) error
 	FindByID(id string) (Student, error)
 	FindAll() ([]Student, error) // todo: think of a way to return all students 1 by 1, not all in one go
 }
 
 // NewStudent creates a new student based on the provided input args
-func NewStudent(uni string,
+func NewStudent(id, uni string,
 	skills []string,
 	exp []string,
 	user User,
@@ -37,7 +36,7 @@ func NewStudent(uni string,
 	}
 
 	return Student{
-		ID:         uuid.New().String(),
+		ID:         id,
 		University: strings.ToLower(uni),
 		Skills:     skills,
 		Experience: exp,

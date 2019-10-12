@@ -17,6 +17,12 @@ func (s StudentRepo) Create(student domain.Student) error {
 	return nil
 }
 
+// Update ...
+func (s StudentRepo) Update(student domain.Student) error {
+	s.DB[student.ID] = student
+	return nil
+}
+
 // FindByID ...
 func (s StudentRepo) FindByID(id string) (domain.Student, error) {
 	if student, ok := s.DB[id]; ok {

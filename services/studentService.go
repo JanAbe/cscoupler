@@ -26,6 +26,16 @@ func (s StudentService) Register(student domain.Student) error {
 	return nil
 }
 
+// Edit edits a student's information
+func (s StudentService) Edit(student domain.Student) error {
+	err := s.StudentRepo.Update(student)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FindByID finds a student based on an identifier
 func (s StudentService) FindByID(id string) (domain.Student, error) {
 	student, err := s.StudentRepo.FindByID(id)
