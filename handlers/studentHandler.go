@@ -147,7 +147,13 @@ func (s StudentHandler) EditStudent() http.Handler {
 			return
 		}
 
-		s.StudentService.Edit(updatedStudent)
+		err = s.StudentService.Edit(updatedStudent)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest) // what header to return
+			return
+		}
+
 		json.NewEncoder(w).Encode(updatedStudent.ID)
 	})
 }

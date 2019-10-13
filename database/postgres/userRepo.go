@@ -49,21 +49,22 @@ func (u UserRepo) FindByID(id string) (d.User, error) {
 		return d.User{}, err
 	}
 
-	var uID, fname, lname, email, role string
+	var uID, fname, lname, email, hash, role string
 	const selectQuery = `SELECT user_id, first_name, last_name, email, role FROM "User" WHERE user_id = $1;`
 	result := tx.QueryRow(selectQuery, id)
 
-	err = result.Scan(&uID, &fname, &lname, &email, &role)
+	err = result.Scan(&uID, &fname, &lname, &email, &hash, &role)
 	if err != nil {
 		return d.User{}, err
 	}
 
 	user := d.User{
-		ID:        uID,
-		Email:     email,
-		FirstName: fname,
-		LastName:  lname,
-		Role:      role,
+		ID:             uID,
+		Email:          email,
+		HashedPassword: hash,
+		FirstName:      fname,
+		LastName:       lname,
+		Role:           role,
 	}
 
 	return user, nil
@@ -76,21 +77,22 @@ func (u UserRepo) FindByEmail(email string) (d.User, error) {
 		return d.User{}, err
 	}
 
-	var uID, fname, lname, uEmail, role string
-	const selectQuery = `SELECT user_id, first_name, last_name, email, role FROM "User" WHERE email = $1;`
+	var uID, fname, lname, uEmail, hash, role string
+	const selectQuery = `SELECT user_id, first_name, last_name, email, hashed_password, role FROM "User" WHERE email = $1;`
 	result := tx.QueryRow(selectQuery, email)
 
-	err = result.Scan(&uID, &fname, &lname, &email, &role)
+	err = result.Scan(&uID, &fname, &lname, &uEmail, &hash, &role)
 	if err != nil {
 		return d.User{}, err
 	}
 
 	user := d.User{
-		ID:        uID,
-		Email:     uEmail,
-		FirstName: fname,
-		LastName:  lname,
-		Role:      role,
+		ID:             uID,
+		Email:          uEmail,
+		HashedPassword: hash,
+		FirstName:      fname,
+		LastName:       lname,
+		Role:           role,
 	}
 
 	return user, nil

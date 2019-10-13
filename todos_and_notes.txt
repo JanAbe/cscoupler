@@ -2,6 +2,8 @@ How to support different roles? atm there is only validation of users
 through JWT. But there needs to be a separation between student-users and
 company-users.
 
+======
+todo:
 update readme with a section about which endpoints cscoupler has
 
 use docker
@@ -9,9 +11,13 @@ use docker
 rename all files to snake case equivalent
 student_repo intead of studentRepo
 
+improve error messages, atm i print some message,
+but there is no stack trace. sooo it sucks massively
+
 !!!
 use transactions better!!!
 !!!
+======
 
 !!! ------
 should a company have multiple accounts linked to it or not.
