@@ -23,7 +23,7 @@ type CompanyHandler struct {
 // CompanyData is a struct that corresponds to incoming company data
 type CompanyData struct {
 	Name            string               `json:"name"`
-	Description     string               `json:"description"`
+	Information     string               `json:"information"`
 	Locations       []LocationData       `json:"locations"`
 	Representatives []RepresentativeData `json:"representatives"`
 }
@@ -55,7 +55,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
-		company, err := domain.NewCompany(data.Name, data.Description)
+		company, err := domain.NewCompany(data.Name, data.Information)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)

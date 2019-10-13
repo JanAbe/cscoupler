@@ -29,7 +29,7 @@ type CompanyRepository interface {
 type Company struct {
 	ID              string
 	Name            string
-	Description     string
+	Information     string
 	Locations       []Address
 	Representatives []Representative
 }
@@ -37,19 +37,19 @@ type Company struct {
 // NewCompany creates a new Company based on the
 // provided input if all input is valid, returning
 // an error otherwise
-func NewCompany(name, desc string) (Company, error) {
+func NewCompany(name, info string) (Company, error) {
 	if len(strings.TrimSpace(name)) == 0 {
 		return Company{}, errors.New("provided name can't be empty")
 	}
 
-	if len(strings.TrimSpace(desc)) == 0 {
-		return Company{}, errors.New("provided description can't be empty")
+	if len(strings.TrimSpace(info)) == 0 {
+		return Company{}, errors.New("provided information can't be empty")
 	}
 
 	return Company{
 		ID:              uuid.New().String(),
 		Name:            strings.ToLower(name),
-		Description:     strings.ToLower(desc),
+		Information:     strings.ToLower(info),
 		Locations:       []Address{},
 		Representatives: []Representative{},
 	}, nil

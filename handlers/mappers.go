@@ -12,7 +12,7 @@ import (
 func ToCompanyData(c d.Company) CompanyData {
 	companyData := CompanyData{
 		Name:        c.Name,
-		Description: c.Description,
+		Information: c.Information,
 	}
 
 	for _, l := range c.Locations {

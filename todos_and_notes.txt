@@ -4,6 +4,8 @@ company-users.
 
 update readme with a section about which endpoints cscoupler has
 
+use docker
+
 !!! ------
 should a company have multiple accounts linked to it or not.
 If this isn't the case, only one person can post projects and 
