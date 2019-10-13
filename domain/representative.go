@@ -21,20 +21,20 @@ type RepresentativeRepository interface {
 // for students
 type Representative struct {
 	ID        string
-	Position  string
+	JobTitle  string
 	User      User
 	CompanyID string
 }
 
 // NewRepresentative creates a new representative based on the provided input
-func NewRepresentative(pos, companyID string, user User) (Representative, error) {
-	if len(strings.TrimSpace(pos)) == 0 {
+func NewRepresentative(jobTitle, companyID string, user User) (Representative, error) {
+	if len(strings.TrimSpace(jobTitle)) == 0 {
 		return Representative{}, errors.New("provided position can't be empty")
 	}
 
 	return Representative{
 		ID:        uuid.New().String(),
-		Position:  strings.ToLower(pos),
+		JobTitle:  strings.ToLower(jobTitle),
 		User:      user,
 		CompanyID: companyID,
 	}, nil
@@ -56,7 +56,6 @@ func (r Representative) GenerateInviteLink(inviteLinkID, urlTemplate string) (In
 	return NewInviteLink(
 		inviteLinkID,
 		url,
-		r.CompanyID,
 		false,
 		time.Hour*24,
 	), nil

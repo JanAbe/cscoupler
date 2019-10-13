@@ -13,8 +13,8 @@ type User struct {
 	ID             string
 	Email          string
 	HashedPassword string
-	Firstname      string
-	Lastname       string
+	FirstName      string
+	LastName       string
 	Role           string
 }
 
@@ -47,8 +47,8 @@ func NewUser(email, password, fname, lname, role string) (User, error) {
 		ID:             id,
 		Email:          strings.ToLower(email),
 		HashedPassword: string(hash),
-		Firstname:      strings.ToLower(fname),
-		Lastname:       strings.ToLower(lname),
+		FirstName:      strings.ToLower(fname),
+		LastName:       strings.ToLower(lname),
 		Role:           role,
 	}, nil
 }

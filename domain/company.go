@@ -32,6 +32,7 @@ type Company struct {
 	Information     string
 	Locations       []Address
 	Representatives []Representative
+	Projects        []Project
 }
 
 // NewCompany creates a new Company based on the
@@ -52,6 +53,7 @@ func NewCompany(name, info string) (Company, error) {
 		Information:     strings.ToLower(info),
 		Locations:       []Address{},
 		Representatives: []Representative{},
+		Projects:        []Project{},
 	}, nil
 }
 

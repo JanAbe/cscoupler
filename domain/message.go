@@ -10,11 +10,11 @@ import (
 // users can send to each other,
 // optionally linked to a certain project
 type Message struct {
-	Sender    string // the sender of the message (email / id of user)
-	Receiver  string // the receiver of the message (email / id of user)
+	Sender    string // the sender of the message (id of user)
+	Receiver  string // the receiver of the message (id of user)
 	Body      string // the message body
 	ProjectID string // the project, the possible subject of the message (optional)
-	Timestamp time.Time
+	CreatedAt time.Time
 }
 
 // NewMessage creates a new message based on
@@ -42,6 +42,6 @@ func NewMessage(sender, receiver, body string) (Message, error) {
 		Receiver:  receiver,
 		Body:      body,
 		ProjectID: "",
-		Timestamp: time.Now(),
+		CreatedAt: time.Now(),
 	}, nil
 }

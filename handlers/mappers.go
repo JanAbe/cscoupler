@@ -28,12 +28,12 @@ func ToCompanyData(c d.Company) CompanyData {
 
 	for _, r := range c.Representatives {
 		reprData := RepresentativeData{
-			Position:  r.Position,
+			JobTitle:  r.JobTitle,
 			CompanyID: r.CompanyID,
 			UserData: UserData{
 				Email:     r.User.Email,
-				Firstname: r.User.Firstname,
-				Lastname:  r.User.Lastname,
+				Firstname: r.User.FirstName,
+				Lastname:  r.User.LastName,
 			},
 		}
 
@@ -52,8 +52,8 @@ func ToStudentData(s d.Student) StudentData {
 		Experience: s.Experience,
 		UserData: UserData{
 			Email:     s.User.Email,
-			Firstname: s.User.Firstname,
-			Lastname:  s.User.Lastname,
+			Firstname: s.User.FirstName,
+			Lastname:  s.User.LastName,
 		},
 	}
 
@@ -64,12 +64,12 @@ func ToStudentData(s d.Student) StudentData {
 // to a representativeData struct
 func ToRepresentativeData(r d.Representative) RepresentativeData {
 	representativeData := RepresentativeData{
-		Position:  r.Position,
+		JobTitle:  r.JobTitle,
 		CompanyID: r.CompanyID,
 		UserData: UserData{
 			Email:     r.User.Email,
-			Firstname: r.User.Firstname,
-			Lastname:  r.User.Lastname,
+			Firstname: r.User.FirstName,
+			Lastname:  r.User.LastName,
 		},
 	}
 

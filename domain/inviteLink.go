@@ -5,18 +5,14 @@ import "time"
 // InviteLink struct conveying an invitelink
 // that gets sent to bind a new user to a company
 type InviteLink struct {
-	ID           string
-	URL          string
-	CreationDate time.Time
-	ExpiryDate   time.Time
+	ID         string
+	URL        string
+	CreatedAt  time.Time
+	ExpiryDate time.Time
 
 	// keeps track if the link has been used or not
 	// This can be used to make sure a link can only gets used once
 	Used bool
-	// id of an entity you want the new user to be bound with.
-	// e.g. companyID if you want a user to be bound to that company
-	// or universityID if you want a user to be bound to that university, etc.
-	EntityID string
 }
 
 // InviteLinkRepository interface
@@ -31,16 +27,14 @@ type InviteLinkRepository interface {
 // the provided entity. InviteLinks are valid for the
 // amount of time specified by the validFor parameter
 // e.g. 24 hours -> time.Hour * 24
-func NewInviteLink(id, url, entityID string, used bool, validFor time.Duration) InviteLink {
+func NewInviteLink(id, url string, used bool, validFor time.Duration) InviteLink {
 	// todo: add check to see if link is valid?
-	// add check to see if entityID is empty?
 	return InviteLink{
-		ID:           id,
-		URL:          url,
-		CreationDate: time.Now(),
-		ExpiryDate:   time.Now().Add(validFor),
-		Used:         used,
-		EntityID:     entityID,
+		ID:         id,
+		URL:        url,
+		CreatedAt:  time.Now(),
+		ExpiryDate: time.Now().Add(validFor),
+		Used:       used,
 	}
 }
 

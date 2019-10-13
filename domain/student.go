@@ -11,8 +11,8 @@ type Student struct {
 	University string
 	Skills     []string
 	Experience []string
-	User       User
 	Status     Status
+	User       User
 	// iets met cv en afbeelding, hoe sla je dat op en hoe geef je het aan in de struct enz.
 }
 

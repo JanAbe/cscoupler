@@ -24,7 +24,7 @@ type RepresentativeHandler struct {
 // RepresentativeData is a struct that corresponds to incoming
 // representative data
 type RepresentativeData struct {
-	Position  string   `json:"position"`
+	JobTitle  string   `json:"jobTitle"`
 	CompanyID string   `json:"companyID"`
 	UserData  UserData `json:"user"`
 }
@@ -86,7 +86,7 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 		}
 
 		representative, err := domain.NewRepresentative(
-			data.Position,
+			data.JobTitle,
 			companyID,
 			user,
 		)

@@ -99,7 +99,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		}
 
 		representative, err := domain.NewRepresentative(
-			mainRepresentative.Position,
+			mainRepresentative.JobTitle,
 			company.ID,
 			user,
 		)
