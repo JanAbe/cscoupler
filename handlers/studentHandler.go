@@ -102,7 +102,7 @@ func (s StudentHandler) EditStudent() http.Handler {
 			return
 		}
 
-		studentID := strings.TrimPrefix(r.URL.Path, s.Path+"/edit/")
+		studentID := strings.TrimPrefix(r.URL.Path, s.Path+"edit/")
 
 		_, err := s.StudentService.FindByID(studentID)
 		if err != nil {
@@ -181,6 +181,6 @@ func (s StudentHandler) FetchStudentByID() http.Handler {
 // Register registers all student related handlers
 func (s StudentHandler) Register() {
 	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchStudentByID())))
-	http.Handle(s.Path+"/edit/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.StudentRole, s.EditStudent())))
+	http.Handle(s.Path+"edit/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.StudentRole, s.EditStudent())))
 	http.Handle("/signup/student", LoggingHandler(os.Stdout, s.SignupStudent()))
 }

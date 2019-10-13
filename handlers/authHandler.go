@@ -27,7 +27,7 @@ type AuthHandler struct {
 // UserData is a struct that corresponds to incoming user data
 type UserData struct {
 	Email     string `json:"email"`
-	Password  string `json:"password"`
+	Password  string `json:"password,omitempty"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 }
