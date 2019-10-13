@@ -66,12 +66,12 @@ func (s StudentRepo) Update(student d.Student) error {
 	}
 
 	const updateUserQuery = `UPDATE "User" u SET first_name=$1, last_name=$2, email=$3
-	WHERE u.user_id=$4;`
+	WHERE u.user_id=(SELECT ref_user FROM "Student" WHERE student_id=$4);`
 	_, err = tx.Exec(updateUserQuery,
 		student.User.FirstName,
 		student.User.LastName,
 		student.User.Email,
-		student.User.ID,
+		student.ID,
 	)
 
 	if err != nil {
