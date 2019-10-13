@@ -1,12 +1,12 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/janabe/cscoupler/database/memory"
-	"github.com/janabe/cscoupler/domain"
+	pg "github.com/janabe/cscoupler/database/postgres"
 	"github.com/janabe/cscoupler/handlers"
 	"github.com/janabe/cscoupler/services"
 	"github.com/janabe/cscoupler/util"
@@ -14,13 +14,14 @@ import (
 
 // Server struct, conveying the application
 type Server struct {
+	db       *sql.DB
 	handlers []handlers.Handler
 }
 
 // NewServer creates a new server which can be run
 // to start the app
-func NewServer() *Server {
-	server := Server{}
+func NewServer(db *sql.DB) *Server {
+	server := Server{db: db}
 	server.init()
 	server.registerHandlers()
 
@@ -43,11 +44,11 @@ func (s *Server) registerHandlers() {
 // init creates all necessary repositories,
 // services and handlers.
 func (s *Server) init() {
-	userRepo := memory.UserRepo{DB: make(map[string]domain.User)}
-	studentRepo := memory.StudentRepo{DB: make(map[string]domain.Student)}
-	companyRepo := memory.CompanyRepo{DB: make(map[string]domain.Company)}
-	representativeRepo := memory.RepresentativeRepo{DB: make(map[string]domain.Representative)}
-	inviteLinkRepo := memory.InviteLinkRepo{DB: make(map[string]domain.InviteLink)}
+	userRepo := pg.UserRepo{DB: s.db}
+	studentRepo := pg.StudentRepo{DB: s.db}
+	companyRepo := pg.CompanyRepo{DB: s.db}
+	representativeRepo := pg.RepresentativeRepo{DB: s.db}
+	inviteLinkRepo := pg.InviteLinkRepo{DB: s.db}
 
 	userService := services.UserService{UserRepo: userRepo}
 	companyService := services.CompanyService{CompanyRepo: companyRepo}

@@ -7,12 +7,12 @@ CREATE TABLE IF NOT EXISTS "User" (
     "role" TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Company (
+CREATE TABLE IF NOT EXISTS "Company" (
     company_id UUID PRIMARY KEY,
     information TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Student (
+CREATE TABLE IF NOT EXISTS "Student" (
     student_id UUID PRIMARY KEY,
     university TEXT,
     skills TEXT[],
@@ -21,14 +21,14 @@ CREATE TABLE IF NOT EXISTS Student (
     ref_user UUID REFERENCES "User" (user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Representative (
+CREATE TABLE IF NOT EXISTS "Representative" (
     representative_id UUID PRIMARY KEY,
     job_title TEXT NOT NULL,
     ref_user UUID REFERENCES "User" (user_id),
     ref_company UUID REFERENCES Company (company_id)
 );
 
-CREATE TABLE IF NOT EXISTS Project (
+CREATE TABLE IF NOT EXISTS "Project" (
     project_id UUID PRIMARY KEY,
     "description" TEXT NOT NULL,
     compensation TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS Project (
     ref_company UUID REFERENCES Company (company_id)
 );
 
-CREATE TABLE IF NOT EXISTS Message (
+CREATE TABLE IF NOT EXISTS "Message" (
     message_id UUID PRIMARY KEY,
     created_at TIMESTAMP DEFAULT now(),
     sender UUID REFERENCES "User" (user_id),
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS Message (
     ref_project UUID REFERENCES Project (project_id)
 );
 
-CREATE TABLE IF NOT EXISTS Address (
+CREATE TABLE IF NOT EXISTS "Address" (
     address_id UUID PRIMARY KEY,
     street TEXT NOT NULL,
     zipcode char(7) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS Address (
     ref_company UUID REFERENCES Company (company_id)
 );
 
-CREATE TABLE IF NOT EXISTS Invite_Link (
+CREATE TABLE IF NOT EXISTS "Invite_Link" (
     invite_link_id UUID PRIMARY KEY,
     url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),

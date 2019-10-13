@@ -3,18 +3,12 @@ package memory
 import (
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/janabe/cscoupler/domain"
 )
 
 // UserRepo ...
 type UserRepo struct {
 	DB map[string]domain.User
-}
-
-// NextID ...
-func (u UserRepo) NextID() string {
-	return uuid.New().String()
 }
 
 // Create ...

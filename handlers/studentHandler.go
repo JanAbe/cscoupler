@@ -93,11 +93,8 @@ func (s StudentHandler) SignupStudent() http.Handler {
 }
 
 // EditStudent edits a student account
-// Path = /students/id
 func (s StudentHandler) EditStudent() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// !!!!!!!!!!!!
-		// why doesn't this function get executed ?!?!?!
 		if r.Method != "PUT" {
 			return
 		}

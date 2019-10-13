@@ -6,6 +6,13 @@ update readme with a section about which endpoints cscoupler has
 
 use docker
 
+rename all files to snake case equivalent
+student_repo intead of studentRepo
+
+!!!
+use transactions better!!!
+!!!
+
 !!! ------
 should a company have multiple accounts linked to it or not.
 If this isn't the case, only one person can post projects and 

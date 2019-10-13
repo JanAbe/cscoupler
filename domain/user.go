@@ -20,7 +20,6 @@ type User struct {
 
 // UserRepository interface
 type UserRepository interface {
-	NextID() string
 	Create(user User) error
 	FindByID(id string) (User, error)
 	FindByEmail(email string) (User, error)
