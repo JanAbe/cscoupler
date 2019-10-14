@@ -185,10 +185,157 @@ func (c CompanyRepo) FindByID(id string) (d.Company, error) {
 
 // FindByName ...
 func (c CompanyRepo) FindByName(name string) (d.Company, error) {
-	return d.Company{}, nil
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return d.Company{}, err
+	}
+
+	var cID, info, cName string
+	var street, zip, city, num string
+	var pID, desc, comp, dur string
+	var recommendations []string
+	var rID, jobTitle string
+	var uID, fname, lname, email, hash, role string
+
+	const selectCompanyQuery = `
+		SELECT c.company_id, c.information, c.name
+		FROM "Company" c
+		WHERE c.name = '$1';
+	`
+	const selectAddressesQuery = `
+		SELECT a.street, a.zipcode, a.city, a.number
+		FROM "Address" a
+		WHERE a.ref_company = '$1'
+	`
+	const selectProjectsQuery = `
+		SELECT p.project_id, p.description, p.compensation, p.duration, p.recommendations
+		FROM "Project" p
+		WHERE p.ref_company = '$1'
+	`
+	const selectRepresentativesQuery = `
+		SELECT 	r.representative_id, r.job_title, u.user_id, u.first_name, u.last_name, u.email, u.hashed_password, u.role
+		FROM "Representative" r
+		JOIN "User" u on r.ref_user = u.user_id
+		WHERE r.ref_company = '$1';
+	`
+	companyResult := tx.QueryRow(selectCompanyQuery, name)
+	err = companyResult.Scan(&cID, &info, &cName)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.Company{}, err
+	}
+
+	addresses := []d.Address{}
+	addressRows, err := tx.Query(selectAddressesQuery, cID)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.Company{}, err
+	}
+	defer addressRows.Close()
+
+	for addressRows.Next() {
+		if err = addressRows.Scan(&street, &zip, &city, &num); err != nil {
+			_ = tx.Rollback()
+			return d.Company{}, err
+		}
+		addresses = append(addresses, d.Address{
+			Street:  street,
+			Zipcode: zip,
+			City:    city,
+			Number:  num,
+		})
+	}
+
+	projects := []d.Project{}
+	projectRows, err := tx.Query(selectProjectsQuery, cID)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.Company{}, err
+	}
+	defer projectRows.Close()
+
+	for projectRows.Next() {
+		if err = projectRows.Scan(&pID, &desc, &comp, &dur, pq.Array(&recommendations)); err != nil {
+			_ = tx.Rollback()
+			return d.Company{}, err
+		}
+		projects = append(projects, d.Project{
+			ID:              pID,
+			Description:     desc,
+			Duration:        dur,
+			Compensation:    comp,
+			Recommendations: recommendations,
+			CompanyID:       cID,
+		})
+	}
+
+	representatives := []d.Representative{}
+	reprRows, err := tx.Query(selectRepresentativesQuery, cID)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.Company{}, err
+	}
+	defer reprRows.Close()
+
+	for reprRows.Next() {
+		if err = reprRows.Scan(&rID, &jobTitle, &uID, &fname, &lname, &email, &hash, &role); err != nil {
+			_ = tx.Rollback()
+			return d.Company{}, err
+		}
+		representatives = append(representatives, d.Representative{
+			ID:        rID,
+			JobTitle:  jobTitle,
+			CompanyID: cID,
+			User: d.User{
+				ID:             uID,
+				FirstName:      fname,
+				LastName:       lname,
+				Email:          email,
+				HashedPassword: hash,
+				Role:           role,
+			},
+		})
+	}
+
+	return d.Company{
+		ID:              cID,
+		Name:            cName,
+		Information:     info,
+		Locations:       addresses,
+		Representatives: representatives,
+		Projects:        projects,
+	}, nil
 }
 
 // FindAll ...
 func (c CompanyRepo) FindAll() ([]d.Company, error) {
-	return []d.Company{}, nil
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return []d.Company{}, err
+	}
+
+	companies := []d.Company{}
+	const selectIDSQuery = `SELECT company_id FROM "Company";`
+	rows, err := tx.Query(selectIDSQuery)
+	defer rows.Close()
+
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			_ = tx.Rollback()
+			return []d.Company{}, err
+		}
+		company, err := c.FindByID(id)
+		if err != nil {
+			return []d.Company{}, err
+		}
+		companies = append(companies, company)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return []d.Company{}, err
+	}
+
+	return companies, nil
 }
