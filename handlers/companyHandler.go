@@ -119,6 +119,12 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		// todo: how does a representative gets his/her own id
 		fmt.Println(representative.ID)
 		json.NewEncoder(w).Encode(company.ID)

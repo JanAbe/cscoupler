@@ -8,12 +8,19 @@ import (
 
 // RepresentativeRepo ...
 type RepresentativeRepo struct {
-	DB *sql.DB
+	DB       *sql.DB
+	UserRepo UserRepo
 }
 
-// Create ...
+// Create inserts a representative in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (r RepresentativeRepo) Create(repr d.Representative) error {
 	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = r.UserRepo.CreateTx(tx, repr.User)
 	if err != nil {
 		return err
 	}
@@ -74,4 +81,33 @@ func (r RepresentativeRepo) FindByID(id string) (d.Representative, error) {
 	}
 
 	return representative, nil
+}
+
+// ============================== Shadow funcs ==============================
+
+// CreateTx inserts a representative in the DB. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (r RepresentativeRepo) CreateTx(tx *sql.Tx, repr d.Representative) error {
+	err := r.UserRepo.CreateTx(tx, repr.User)
+	if err != nil {
+		return err
+	}
+
+	const insertQuery = `INSERT INTO "Representative"(representative_id, job_title, ref_user, ref_company)
+	VALUES ($1, $2, $3, $4);`
+	_, err = tx.Exec(insertQuery,
+		repr.ID,
+		repr.JobTitle,
+		repr.User.ID,
+		repr.CompanyID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return nil
 }

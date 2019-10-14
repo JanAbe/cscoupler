@@ -12,7 +12,7 @@ import (
 // CompanyRepo ...
 type CompanyRepo struct {
 	DB       *sql.DB
-	reprRepo d.RepresentativeRepository
+	ReprRepo RepresentativeRepo
 }
 
 // Create ...
@@ -45,7 +45,7 @@ func (c CompanyRepo) Create(company d.Company) error {
 		}
 	}
 
-	err = c.reprRepo.Create(company.Representatives[0])
+	err = c.ReprRepo.CreateTx(tx, company.Representatives[0])
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -76,23 +76,23 @@ func (c CompanyRepo) FindByID(id string) (d.Company, error) {
 	const selectCompanyQuery = `
 		SELECT c.company_id, c.information, c.name
 		FROM "Company" c
-		WHERE c.company_id = '$1';
+		WHERE c.company_id = $1;
 	`
 	const selectAddressesQuery = `
 		SELECT a.street, a.zipcode, a.city, a.number
 		FROM "Address" a
-		WHERE ref_company = '$1'
+		WHERE ref_company = $1;
 	`
 	const selectProjectsQuery = `
 		SELECT p.project_id, p.description, p.compensation, p.duration, p.recommendations
 		FROM "Project" p
-		WHERE p.ref_company = '$1'
+		WHERE p.ref_company = $1;
 	`
 	const selectRepresentativesQuery = `
 		SELECT 	r.representative_id, r.job_title, u.user_id, u.first_name, u.last_name, u.email, u.hashed_password, u.role
 		FROM "Representative" r
 		JOIN "User" u on r.ref_user = u.user_id
-		WHERE r.ref_company = '$1';
+		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, id)
 	err = companyResult.Scan(&cID, &info, &name)
@@ -200,23 +200,23 @@ func (c CompanyRepo) FindByName(name string) (d.Company, error) {
 	const selectCompanyQuery = `
 		SELECT c.company_id, c.information, c.name
 		FROM "Company" c
-		WHERE c.name = '$1';
+		WHERE c.name = $1;
 	`
 	const selectAddressesQuery = `
 		SELECT a.street, a.zipcode, a.city, a.number
 		FROM "Address" a
-		WHERE a.ref_company = '$1'
+		WHERE a.ref_company = $1;
 	`
 	const selectProjectsQuery = `
 		SELECT p.project_id, p.description, p.compensation, p.duration, p.recommendations
 		FROM "Project" p
-		WHERE p.ref_company = '$1'
+		WHERE p.ref_company = $1;
 	`
 	const selectRepresentativesQuery = `
 		SELECT 	r.representative_id, r.job_title, u.user_id, u.first_name, u.last_name, u.email, u.hashed_password, u.role
 		FROM "Representative" r
 		JOIN "User" u on r.ref_user = u.user_id
-		WHERE r.ref_company = '$1';
+		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, name)
 	err = companyResult.Scan(&cID, &info, &cName)

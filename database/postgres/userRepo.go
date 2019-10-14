@@ -11,26 +11,16 @@ type UserRepo struct {
 	DB *sql.DB
 }
 
-// Create ...
+// Create inserts a user in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (u UserRepo) Create(user d.User) error {
 	tx, err := u.DB.Begin()
 	if err != nil {
 		return err
 	}
 
-	const insertQuery = `INSERT INTO "User"(user_id, first_name, last_name, email, 
-		hashed_password, role) VALUES($1, $2, $3, $4, $5, $6);`
-	_, err = tx.Exec(insertQuery,
-		user.ID,
-		user.FirstName,
-		user.LastName,
-		user.Email,
-		user.HashedPassword,
-		user.Role,
-	)
-
+	err = u.CreateTx(tx, user)
 	if err != nil {
-		_ = tx.Rollback()
 		return err
 	}
 
@@ -108,4 +98,30 @@ func (u UserRepo) FindByEmail(email string) (d.User, error) {
 	}
 
 	return user, nil
+}
+
+// ============================== Shadow funcs ==============================
+
+// CreateTx inserts a user in the DB. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (u UserRepo) CreateTx(tx *sql.Tx, user d.User) error {
+	const insertQuery = `INSERT INTO "User"(user_id, first_name, last_name, email, 
+		hashed_password, role) VALUES($1, $2, $3, $4, $5, $6);`
+	_, err := tx.Exec(insertQuery,
+		user.ID,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.HashedPassword,
+		user.Role,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return nil
 }

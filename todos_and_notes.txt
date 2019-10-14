@@ -4,6 +4,10 @@ company-users.
 
 ======
 todo:
+
+improve error messages, they suck for some reason. Probably my fault, idk though
+they are kinda flipping useless in debugging
+
 update readme with a section about which endpoints cscoupler has
 
 use docker
@@ -16,6 +20,28 @@ but there is no stack trace. sooo it sucks massively
 
 !!!
 use transactions better!!!
+
+problems with transactions:
+how to use one transaction between multiple functions
+from different repositories?
+
+If i pass a transaction as an argument, the service
+class is more tightly coupled, because it knows SQL is used.
+Even more coupled than i thought, because you need a pointer to a sql.DB
+in order to create a transaction.
+
+Maybe i can add an extra class of indirection/abstraction above the
+implementations of the repositories. But then the services would 
+depend on these classes, and then the whole repository thing is kinda meh.
+
+---
+So this doesn't work, because the interface doesn't know about the field:
+or i could maybe pass the *DB to all repositories, then the service class
+can call this public *DB field of the repository to create a transaction
+and pass it to all the repository functions.
+---
+ 
+:c
 !!!
 ======
 

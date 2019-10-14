@@ -23,11 +23,6 @@ func (c CompanyService) Register(company domain.Company) error {
 		return err
 	}
 
-	err = c.RepresentativeService.Register(company.Representatives[0])
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
