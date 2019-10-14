@@ -159,6 +159,7 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 			skills, exp                    []string
 			status                         d.Status
 		)
+
 		if err := rows.Scan(&sID, &uni, pq.Array(&skills),
 			pq.Array(&exp), &status, &uID,
 			&fname, &lname, &email, &role); err != nil {
@@ -180,6 +181,11 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 				Role:      role,
 			},
 		})
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return []d.Student{}, err
 	}
 
 	return students, nil

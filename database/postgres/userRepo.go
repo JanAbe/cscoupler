@@ -55,6 +55,7 @@ func (u UserRepo) FindByID(id string) (d.User, error) {
 
 	err = result.Scan(&uID, &fname, &lname, &email, &hash, &role)
 	if err != nil {
+		_ = tx.Rollback()
 		return d.User{}, err
 	}
 
@@ -65,6 +66,11 @@ func (u UserRepo) FindByID(id string) (d.User, error) {
 		FirstName:      fname,
 		LastName:       lname,
 		Role:           role,
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return d.User{}, err
 	}
 
 	return user, nil
@@ -83,6 +89,7 @@ func (u UserRepo) FindByEmail(email string) (d.User, error) {
 
 	err = result.Scan(&uID, &fname, &lname, &uEmail, &hash, &role)
 	if err != nil {
+		_ = tx.Rollback()
 		return d.User{}, err
 	}
 
@@ -93,6 +100,11 @@ func (u UserRepo) FindByEmail(email string) (d.User, error) {
 		FirstName:      fname,
 		LastName:       lname,
 		Role:           role,
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return d.User{}, err
 	}
 
 	return user, nil

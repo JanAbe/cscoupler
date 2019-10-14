@@ -13,6 +13,7 @@ type InviteLinkRepo struct {
 
 // Create ...
 func (i InviteLinkRepo) Create(inviteLink d.InviteLink) error {
+
 	return nil
 }
 
