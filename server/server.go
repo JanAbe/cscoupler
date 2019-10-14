@@ -7,24 +7,35 @@ import (
 	"net/http"
 
 	pg "github.com/janabe/cscoupler/database/postgres"
+	d "github.com/janabe/cscoupler/domain"
 	"github.com/janabe/cscoupler/handlers"
-	"github.com/janabe/cscoupler/services"
+	ser "github.com/janabe/cscoupler/services"
 	"github.com/janabe/cscoupler/util"
 )
 
 // Server struct, conveying the application
 type Server struct {
-	db       *sql.DB
-	handlers []handlers.Handler
+	db                    *sql.DB
+	handlers              []handlers.Handler
+	userService           ser.UserService
+	companyService        ser.CompanyService
+	inviteLinkService     ser.InviteLinkService
+	studentService        ser.StudentService
+	representativeService ser.RepresentativeService
+	userRepo              d.UserRepository
+	studentRepo           d.StudentRepository
+	companyRepo           d.CompanyRepository
+	representativeRepo    d.RepresentativeRepository
+	inviteLinkRepo        d.InviteLinkRepository
 }
 
 // NewServer creates a new server which can be run
 // to start the app
 func NewServer(db *sql.DB) *Server {
 	server := Server{db: db}
-	server.init()
-	server.registerHandlers()
-
+	server.initRepos()
+	server.initServices()
+	server.initHandlers()
 	return &server
 }
 
@@ -34,61 +45,55 @@ func (s *Server) Run() {
 	log.Fatal(http.ListenAndServeTLS(":3000", "./server/cert.pem", "./server/key.pem", nil))
 }
 
-// registerHandlers registers all handlers of Server s
-func (s *Server) registerHandlers() {
-	for _, handler := range s.handlers {
-		handler.Register()
-	}
+func (s *Server) initRepos() {
+	s.userRepo = pg.UserRepo{DB: s.db}
+	s.studentRepo = pg.StudentRepo{DB: s.db}
+	s.companyRepo = pg.CompanyRepo{DB: s.db}
+	s.representativeRepo = pg.RepresentativeRepo{DB: s.db}
+	s.inviteLinkRepo = pg.InviteLinkRepo{DB: s.db}
 }
 
-// init creates all necessary repositories,
-// services and handlers.
-func (s *Server) init() {
-	userRepo := pg.UserRepo{DB: s.db}
-	studentRepo := pg.StudentRepo{DB: s.db}
-	companyRepo := pg.CompanyRepo{DB: s.db}
-	representativeRepo := pg.RepresentativeRepo{DB: s.db}
-	inviteLinkRepo := pg.InviteLinkRepo{DB: s.db}
-
-	userService := services.UserService{UserRepo: userRepo}
-	companyService := services.CompanyService{CompanyRepo: companyRepo}
-	inviteLinkService := services.InviteLinkService{InviteLinkRepo: inviteLinkRepo}
-	studentService := services.StudentService{StudentRepo: studentRepo, UserService: userService}
-
-	representativeService := services.RepresentativeService{
-		RepresentativeRepo: representativeRepo,
-		CompanyService:     companyService,
-		UserService:        userService,
+func (s *Server) initServices() {
+	s.userService = ser.UserService{UserRepo: s.userRepo}
+	s.companyService = ser.CompanyService{CompanyRepo: s.companyRepo}
+	s.inviteLinkService = ser.InviteLinkService{InviteLinkRepo: s.inviteLinkRepo}
+	s.studentService = ser.StudentService{StudentRepo: s.studentRepo, UserService: s.userService}
+	s.representativeService = ser.RepresentativeService{
+		RepresentativeRepo: s.representativeRepo,
+		CompanyService:     s.companyService,
+		UserService:        s.userService,
 	}
 
-	companyService.RepresentativeService = &representativeService
+	s.companyService.RepresentativeService = &s.representativeService
+}
 
+func (s *Server) initHandlers() {
 	authHandler := handlers.AuthHandler{
 		JWTKey:      util.GetJWTSecret("./.secret.json"),
-		UserService: userService,
+		UserService: s.userService,
 	}
 
 	studentHandler := handlers.StudentHandler{
-		StudentService: studentService,
+		StudentService: s.studentService,
 		AuthHandler:    authHandler,
 		Path:           "/students/",
 	}
 
 	companyHandler := handlers.CompanyHandler{
-		CompanyService: companyService,
+		CompanyService: s.companyService,
 		AuthHandler:    authHandler,
 		Path:           "/companies/",
 	}
 
 	representativeHandler := handlers.RepresentativeHandler{
-		RepresentativeService: representativeService,
-		InviteLinkService:     inviteLinkService,
+		RepresentativeService: s.representativeService,
+		InviteLinkService:     s.inviteLinkService,
 		AuthHandler:           authHandler,
 		Path:                  "/representatives/",
 	}
 
-	s.handlers = append(s.handlers, authHandler)
-	s.handlers = append(s.handlers, studentHandler)
-	s.handlers = append(s.handlers, companyHandler)
-	s.handlers = append(s.handlers, representativeHandler)
+	authHandler.Register()
+	studentHandler.Register()
+	companyHandler.Register()
+	representativeHandler.Register()
 }
