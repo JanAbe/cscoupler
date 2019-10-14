@@ -55,6 +55,7 @@ func (r RepresentativeRepo) FindByID(id string) (d.Representative, error) {
 	result := tx.QueryRow(selectQuery, id)
 	err = result.Scan(&rID, &title, &cID, &uID, &fname, &lname, &email, &hash, &role)
 	if err != nil {
+		_ = tx.Rollback()
 		return d.Representative{}, err
 	}
 
