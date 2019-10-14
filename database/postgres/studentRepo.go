@@ -106,6 +106,7 @@ func (s StudentRepo) FindByID(id string) (d.Student, error) {
 
 	err = result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &uID, &fname, &lname, &email, &role)
 	if err != nil {
+		_ = tx.Rollback()
 		return d.Student{}, err
 	}
 
@@ -124,10 +125,62 @@ func (s StudentRepo) FindByID(id string) (d.Student, error) {
 		},
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return d.Student{}, err
+	}
+
 	return student, nil
 }
 
 // FindAll ...
 func (s StudentRepo) FindAll() ([]d.Student, error) {
-	return []d.Student{}, nil
+	tx, err := s.DB.Begin()
+	if err != nil {
+		return []d.Student{}, err
+	}
+
+	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experience, s.status, 
+	u.user_id, u.first_name, u.last_name, u.email, u.role 
+	FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id`
+
+	rows, err := tx.Query(selectQuery)
+	if err != nil {
+		_ = tx.Rollback()
+		return []d.Student{}, err
+	}
+	defer rows.Close()
+
+	students := []d.Student{}
+	for rows.Next() {
+		var (
+			sID, uni                       string
+			uID, fname, lname, email, role string
+			skills, exp                    []string
+			status                         d.Status
+		)
+		if err := rows.Scan(&sID, &uni, pq.Array(&skills),
+			pq.Array(&exp), &status, &uID,
+			&fname, &lname, &email, &role); err != nil {
+			_ = tx.Rollback()
+			return []d.Student{}, err
+		}
+
+		students = append(students, d.Student{
+			ID:         sID,
+			University: uni,
+			Skills:     skills,
+			Experience: exp,
+			Status:     status,
+			User: d.User{
+				ID:        uID,
+				Email:     email,
+				FirstName: fname,
+				LastName:  lname,
+				Role:      role,
+			},
+		})
+	}
+
+	return students, nil
 }
