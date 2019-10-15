@@ -5,6 +5,12 @@ company-users.
 ======
 todo:
 
+look into cookie attributes and other safety measures
+
+look into update/edit student account. What fields should the user
+be able to edit. Important fields are password and emailaddress.
+When can they edit those.
+
 look at errors returned, and at the errors looked for in the 
 handlers. This isn't correct atm.
 

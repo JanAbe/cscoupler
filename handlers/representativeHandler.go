@@ -162,6 +162,7 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 		}
 
 		// or should the representative ID be sent as json instead of in URL
+		// or read from the jwt
 		representativeID := strings.TrimPrefix(req.URL.Path, r.Path+"invitelink/")
 
 		repr, err := r.RepresentativeService.FindByID(representativeID)
@@ -185,7 +186,6 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 // Register registers all representative related handlers
 func (r RepresentativeHandler) Register() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate("", r.FetchRepresentativeByID())))
-	// todo: update template to /signup/representatives/invite/[companyID]/[inviteID] or something else like this
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))
 	http.Handle(r.Path+"invitelink/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.MakeInviteLink())))
 }
