@@ -19,12 +19,7 @@ func (r RepresentativeService) Register(representative domain.Representative) er
 		return e.ErrorEntityNotFound
 	}
 
-	err := r.UserService.Register(representative.User)
-	if err != nil {
-		return err
-	}
-
-	err = r.RepresentativeRepo.Create(representative)
+	err := r.RepresentativeRepo.Create(representative)
 	if err != nil {
 		return err
 	}

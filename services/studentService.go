@@ -8,17 +8,11 @@ import (
 // the app supports regaring students
 type StudentService struct {
 	StudentRepo domain.StudentRepository
-	UserService UserService
 }
 
 // Register registers a new Student
 func (s StudentService) Register(student domain.Student) error {
-	err := s.UserService.Register(student.User)
-	if err != nil {
-		return err
-	}
-
-	err = s.StudentRepo.Create(student)
+	err := s.StudentRepo.Create(student)
 	if err != nil {
 		return err
 	}

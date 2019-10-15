@@ -9,13 +9,14 @@ import (
 	d "github.com/janabe/cscoupler/domain"
 )
 
-// CompanyRepo ...
+// CompanyRepo struct for postgres database
 type CompanyRepo struct {
 	DB       *sql.DB
 	ReprRepo RepresentativeRepo
 }
 
-// Create ...
+// Create inserts a company in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (c CompanyRepo) Create(company d.Company) error {
 	tx, err := c.DB.Begin()
 	if err != nil {
@@ -47,7 +48,6 @@ func (c CompanyRepo) Create(company d.Company) error {
 
 	err = c.ReprRepo.CreateTx(tx, company.Representatives[0])
 	if err != nil {
-		_ = tx.Rollback()
 		return err
 	}
 
@@ -59,13 +59,87 @@ func (c CompanyRepo) Create(company d.Company) error {
 	return nil
 }
 
-// FindByID ...
+// FindByID finds a company in the DB based on id. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (c CompanyRepo) FindByID(id string) (d.Company, error) {
 	tx, err := c.DB.Begin()
 	if err != nil {
 		return d.Company{}, err
 	}
 
+	company, err := c.FindByIDTx(tx, id)
+	if err != nil {
+		return d.Company{}, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return d.Company{}, err
+	}
+
+	return company, nil
+}
+
+// FindByName finds a company in the DB based on name. It should be used as a single
+// unit of work, as it has its own transaction inside.
+func (c CompanyRepo) FindByName(name string) (d.Company, error) {
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return d.Company{}, err
+	}
+
+	company, err := c.FindByNameTx(tx, name)
+	if err != nil {
+		return d.Company{}, nil
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return d.Company{}, nil
+	}
+
+	return company, nil
+}
+
+// FindAll finds all companies in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
+func (c CompanyRepo) FindAll() ([]d.Company, error) {
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return []d.Company{}, err
+	}
+
+	companies := []d.Company{}
+	const selectIDSQuery = `SELECT company_id FROM "Company";`
+	rows, err := tx.Query(selectIDSQuery)
+	defer rows.Close()
+
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			_ = tx.Rollback()
+			return []d.Company{}, err
+		}
+		company, err := c.FindByIDTx(tx, id)
+		if err != nil {
+			return []d.Company{}, err
+		}
+		companies = append(companies, company)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return []d.Company{}, err
+	}
+
+	return companies, nil
+}
+
+// FindByIDTx finds a company in the DB based on id. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 	var cID, info, name string
 	var street, zip, city, num string
 	var pID, desc, comp, dur string
@@ -95,7 +169,7 @@ func (c CompanyRepo) FindByID(id string) (d.Company, error) {
 		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, id)
-	err = companyResult.Scan(&cID, &info, &name)
+	err := companyResult.Scan(&cID, &info, &name)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Company{}, err
@@ -183,13 +257,11 @@ func (c CompanyRepo) FindByID(id string) (d.Company, error) {
 	}, nil
 }
 
-// FindByName ...
-func (c CompanyRepo) FindByName(name string) (d.Company, error) {
-	tx, err := c.DB.Begin()
-	if err != nil {
-		return d.Company{}, err
-	}
-
+// FindByNameTx finds a company in the DB based on name. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (c CompanyRepo) FindByNameTx(tx *sql.Tx, name string) (d.Company, error) {
 	var cID, info, cName string
 	var street, zip, city, num string
 	var pID, desc, comp, dur string
@@ -219,7 +291,7 @@ func (c CompanyRepo) FindByName(name string) (d.Company, error) {
 		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, name)
-	err = companyResult.Scan(&cID, &info, &cName)
+	err := companyResult.Scan(&cID, &info, &cName)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Company{}, err
@@ -305,37 +377,4 @@ func (c CompanyRepo) FindByName(name string) (d.Company, error) {
 		Representatives: representatives,
 		Projects:        projects,
 	}, nil
-}
-
-// FindAll ...
-func (c CompanyRepo) FindAll() ([]d.Company, error) {
-	tx, err := c.DB.Begin()
-	if err != nil {
-		return []d.Company{}, err
-	}
-
-	companies := []d.Company{}
-	const selectIDSQuery = `SELECT company_id FROM "Company";`
-	rows, err := tx.Query(selectIDSQuery)
-	defer rows.Close()
-
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			_ = tx.Rollback()
-			return []d.Company{}, err
-		}
-		company, err := c.FindByID(id)
-		if err != nil {
-			return []d.Company{}, err
-		}
-		companies = append(companies, company)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return []d.Company{}, err
-	}
-
-	return companies, nil
 }

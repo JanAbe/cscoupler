@@ -8,30 +8,22 @@ import (
 	d "github.com/janabe/cscoupler/domain"
 )
 
-// StudentRepo ...
+// StudentRepo struct for postgres database
 type StudentRepo struct {
-	DB *sql.DB
+	DB       *sql.DB
+	UserRepo UserRepo
 }
 
-// Create ...
+// Create inserts a student in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (s StudentRepo) Create(student d.Student) error {
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return err
 	}
 
-	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experience, status, ref_user) VALUES ($1, $2, $3, $4, $5, $6);`
-	_, err = tx.Exec(insertQuery,
-		student.ID,
-		student.University,
-		pq.Array(student.Skills),
-		pq.Array(student.Experience),
-		student.Status,
-		student.User.ID,
-	)
-
+	err = s.CreateTx(tx, student)
 	if err != nil {
-		_ = tx.Rollback()
 		return err
 	}
 
@@ -43,39 +35,16 @@ func (s StudentRepo) Create(student d.Student) error {
 	return nil
 }
 
-// Update ...
+// Update updates a student in the DB. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (s StudentRepo) Update(student d.Student) error {
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return err
 	}
 
-	const updateStudentQuery = `UPDATE "Student" s SET university=$1, skills=$2, experience=$3, 
-	status=$4 WHERE s.student_id=$5;`
-	_, err = tx.Exec(updateStudentQuery,
-		student.University,
-		pq.Array(student.Skills),
-		pq.Array(student.Experience),
-		student.Status,
-		student.ID,
-	)
-
+	err = s.UpdateTx(tx, student)
 	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	const updateUserQuery = `UPDATE "User" u SET first_name=$1, last_name=$2, email=$3
-	WHERE u.user_id=(SELECT ref_user FROM "Student" WHERE student_id=$4);`
-	_, err = tx.Exec(updateUserQuery,
-		student.User.FirstName,
-		student.User.LastName,
-		student.User.Email,
-		student.ID,
-	)
-
-	if err != nil {
-		_ = tx.Rollback()
 		return err
 	}
 
@@ -87,42 +56,17 @@ func (s StudentRepo) Update(student d.Student) error {
 	return nil
 }
 
-// FindByID ...
+// FindByID finds a student in the DB based on id. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (s StudentRepo) FindByID(id string) (d.Student, error) {
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return d.Student{}, err
 	}
 
-	var uID, fname, lname, email, role string
-	var sID, uni string
-	var skills, exp []string
-	var status d.Status
-
-	const selectQuery = `SELECT student_id, s.university, s.skills, s.experience, s.status, 
-	user_id, u.first_name, u.last_name, u.email, u.role FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id
-	WHERE student_id=$1;`
-	result := tx.QueryRow(selectQuery, id)
-
-	err = result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &uID, &fname, &lname, &email, &role)
+	student, err := s.FindByIDTx(tx, id)
 	if err != nil {
-		_ = tx.Rollback()
 		return d.Student{}, err
-	}
-
-	student := d.Student{
-		ID:         sID,
-		University: uni,
-		Skills:     skills,
-		Experience: exp,
-		Status:     status,
-		User: d.User{
-			ID:        uID,
-			Email:     email,
-			FirstName: fname,
-			LastName:  lname,
-			Role:      role,
-		},
 	}
 
 	err = tx.Commit()
@@ -133,7 +77,8 @@ func (s StudentRepo) FindByID(id string) (d.Student, error) {
 	return student, nil
 }
 
-// FindAll ...
+// FindAll finds all the students in the DB based. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (s StudentRepo) FindAll() ([]d.Student, error) {
 	tx, err := s.DB.Begin()
 	if err != nil {
@@ -189,4 +134,107 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 	}
 
 	return students, nil
+}
+
+// CreateTx inserts a student in the DB. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (s StudentRepo) CreateTx(tx *sql.Tx, student d.Student) error {
+	err := s.UserRepo.CreateTx(tx, student.User)
+	if err != nil {
+		return err
+	}
+
+	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experience, status, ref_user) VALUES ($1, $2, $3, $4, $5, $6);`
+	_, err = tx.Exec(insertQuery,
+		student.ID,
+		student.University,
+		pq.Array(student.Skills),
+		pq.Array(student.Experience),
+		student.Status,
+		student.User.ID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+// UpdateTx udpates a student in the DB. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (s StudentRepo) UpdateTx(tx *sql.Tx, student d.Student) error {
+	const updateStudentQuery = `UPDATE "Student" s SET university=$1, skills=$2, experience=$3, 
+	status=$4 WHERE s.student_id=$5;`
+	_, err := tx.Exec(updateStudentQuery,
+		student.University,
+		pq.Array(student.Skills),
+		pq.Array(student.Experience),
+		student.Status,
+		student.ID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// todo: move this code to UserRepo and call it Update()
+	const updateUserQuery = `UPDATE "User" u SET first_name=$1, last_name=$2, email=$3
+	WHERE u.user_id=(SELECT ref_user FROM "Student" WHERE student_id=$4);`
+	_, err = tx.Exec(updateUserQuery,
+		student.User.FirstName,
+		student.User.LastName,
+		student.User.Email,
+		student.ID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+// FindByIDTx finds a student in the DB based on id. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (s StudentRepo) FindByIDTx(tx *sql.Tx, id string) (d.Student, error) {
+	var uID, fname, lname, email, role string
+	var sID, uni string
+	var skills, exp []string
+	var status d.Status
+
+	const selectQuery = `SELECT student_id, s.university, s.skills, s.experience, s.status, 
+	user_id, u.first_name, u.last_name, u.email, u.role FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id
+	WHERE student_id=$1;`
+	result := tx.QueryRow(selectQuery, id)
+
+	err := result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &uID, &fname, &lname, &email, &role)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.Student{}, err
+	}
+
+	return d.Student{
+		ID:         sID,
+		University: uni,
+		Skills:     skills,
+		Experience: exp,
+		Status:     status,
+		User: d.User{
+			ID:        uID,
+			Email:     email,
+			FirstName: fname,
+			LastName:  lname,
+			Role:      role,
+		},
+	}, nil
 }

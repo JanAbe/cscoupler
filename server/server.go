@@ -47,8 +47,8 @@ func (s *Server) Run() {
 
 func (s *Server) initRepos() {
 	s.userRepo = pg.UserRepo{DB: s.db}
-	s.studentRepo = pg.StudentRepo{DB: s.db}
 	s.inviteLinkRepo = pg.InviteLinkRepo{DB: s.db}
+	s.studentRepo = pg.StudentRepo{DB: s.db, UserRepo: s.userRepo.(pg.UserRepo)}
 	s.representativeRepo = pg.RepresentativeRepo{DB: s.db, UserRepo: s.userRepo.(pg.UserRepo)}
 	s.companyRepo = pg.CompanyRepo{DB: s.db, ReprRepo: s.representativeRepo.(pg.RepresentativeRepo)}
 }
@@ -57,7 +57,7 @@ func (s *Server) initServices() {
 	s.userService = ser.UserService{UserRepo: s.userRepo}
 	s.companyService = ser.CompanyService{CompanyRepo: s.companyRepo}
 	s.inviteLinkService = ser.InviteLinkService{InviteLinkRepo: s.inviteLinkRepo}
-	s.studentService = ser.StudentService{StudentRepo: s.studentRepo, UserService: s.userService}
+	s.studentService = ser.StudentService{StudentRepo: s.studentRepo}
 	s.representativeService = ser.RepresentativeService{
 		RepresentativeRepo: s.representativeRepo,
 		CompanyService:     s.companyService,

@@ -5,6 +5,9 @@ company-users.
 ======
 todo:
 
+look at errors returned, and at the errors looked for in the 
+handlers. This isn't correct atm.
+
 improve error messages, they suck for some reason. Probably my fault, idk though
 they are kinda flipping useless in debugging
 

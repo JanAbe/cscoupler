@@ -13,7 +13,7 @@ type InviteLinkService struct {
 }
 
 // todo: refactor/ improve code. This is not conform open/closed principal
-// if i want to add like a feature to create an invitelink for universities,
+// if i want to add a feature to create an invitelink for universities,
 // to bind a new student to that university, i need to create a new func in
 // this file. This can be improved i think.
 

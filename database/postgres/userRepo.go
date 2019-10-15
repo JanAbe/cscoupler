@@ -6,7 +6,7 @@ import (
 	d "github.com/janabe/cscoupler/domain"
 )
 
-// UserRepo ..
+// UserRepo struct for postgres db
 type UserRepo struct {
 	DB *sql.DB
 }
@@ -32,30 +32,17 @@ func (u UserRepo) Create(user d.User) error {
 	return nil
 }
 
-// FindByID ...
+// FindByID finds a user in the DB based on id. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (u UserRepo) FindByID(id string) (d.User, error) {
 	tx, err := u.DB.Begin()
 	if err != nil {
 		return d.User{}, err
 	}
 
-	var uID, fname, lname, email, hash, role string
-	const selectQuery = `SELECT user_id, first_name, last_name, email, role FROM "User" WHERE user_id = $1;`
-	result := tx.QueryRow(selectQuery, id)
-
-	err = result.Scan(&uID, &fname, &lname, &email, &hash, &role)
+	user, err := u.FindByIDTx(tx, id)
 	if err != nil {
-		_ = tx.Rollback()
 		return d.User{}, err
-	}
-
-	user := d.User{
-		ID:             uID,
-		Email:          email,
-		HashedPassword: hash,
-		FirstName:      fname,
-		LastName:       lname,
-		Role:           role,
 	}
 
 	err = tx.Commit()
@@ -66,30 +53,17 @@ func (u UserRepo) FindByID(id string) (d.User, error) {
 	return user, nil
 }
 
-// FindByEmail ...
+// FindByEmail finds a user in the DB based on email. It should be used as a single
+// unit of work, as it has its own transaction inside.
 func (u UserRepo) FindByEmail(email string) (d.User, error) {
 	tx, err := u.DB.Begin()
 	if err != nil {
 		return d.User{}, err
 	}
 
-	var uID, fname, lname, uEmail, hash, role string
-	const selectQuery = `SELECT user_id, first_name, last_name, email, hashed_password, role FROM "User" WHERE email = $1;`
-	result := tx.QueryRow(selectQuery, email)
-
-	err = result.Scan(&uID, &fname, &lname, &uEmail, &hash, &role)
+	user, err := u.FindByEmailTx(tx, email)
 	if err != nil {
-		_ = tx.Rollback()
 		return d.User{}, err
-	}
-
-	user := d.User{
-		ID:             uID,
-		Email:          uEmail,
-		HashedPassword: hash,
-		FirstName:      fname,
-		LastName:       lname,
-		Role:           role,
 	}
 
 	err = tx.Commit()
@@ -99,8 +73,6 @@ func (u UserRepo) FindByEmail(email string) (d.User, error) {
 
 	return user, nil
 }
-
-// ============================== Shadow funcs ==============================
 
 // CreateTx inserts a user in the DB. It should be used as PART of a
 // unit of work, as a transaction gets passed in but will not be committed.
@@ -124,4 +96,54 @@ func (u UserRepo) CreateTx(tx *sql.Tx, user d.User) error {
 	}
 
 	return nil
+}
+
+// FindByIDTx finds a user in the DB based on id. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (u UserRepo) FindByIDTx(tx *sql.Tx, id string) (d.User, error) {
+	var uID, fname, lname, email, hash, role string
+	const selectQuery = `SELECT user_id, first_name, last_name, email, role FROM "User" WHERE user_id = $1;`
+	result := tx.QueryRow(selectQuery, id)
+
+	err := result.Scan(&uID, &fname, &lname, &email, &hash, &role)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.User{}, err
+	}
+
+	return d.User{
+		ID:             uID,
+		Email:          email,
+		HashedPassword: hash,
+		FirstName:      fname,
+		LastName:       lname,
+		Role:           role,
+	}, nil
+}
+
+// FindByEmailTx finds a user in the DB based on email. It should be used as PART of a
+// unit of work, as a transaction gets passed in but will not be committed.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong
+func (u UserRepo) FindByEmailTx(tx *sql.Tx, email string) (d.User, error) {
+	var uID, fname, lname, uEmail, hash, role string
+	const selectQuery = `SELECT user_id, first_name, last_name, email, hashed_password, role FROM "User" WHERE email=$1;`
+	result := tx.QueryRow(selectQuery, email)
+
+	err := result.Scan(&uID, &fname, &lname, &uEmail, &hash, &role)
+	if err != nil {
+		_ = tx.Rollback()
+		return d.User{}, err
+	}
+
+	return d.User{
+		ID:             uID,
+		Email:          uEmail,
+		HashedPassword: hash,
+		FirstName:      fname,
+		LastName:       lname,
+		Role:           role,
+	}, nil
 }
