@@ -29,7 +29,7 @@ type Representative struct {
 // NewRepresentative creates a new representative based on the provided input
 func NewRepresentative(jobTitle, companyID string, user User) (Representative, error) {
 	if len(strings.TrimSpace(jobTitle)) == 0 {
-		return Representative{}, errors.New("provided position can't be empty")
+		return Representative{}, errors.New("provided jobTitle can't be empty")
 	}
 
 	return Representative{

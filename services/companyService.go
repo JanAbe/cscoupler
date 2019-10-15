@@ -8,14 +8,19 @@ import (
 // CompanyService struct, containing all features
 // the app supports regarding companies
 type CompanyService struct {
-	CompanyRepo           domain.CompanyRepository
-	RepresentativeService *RepresentativeService
+	CompanyRepo domain.CompanyRepository
+	ReprService *RepresentativeService
 }
 
 // Register registers a new company and their main representative
 func (c CompanyService) Register(company domain.Company) error {
 	if c.NameAlreadyUsed(company.Name) {
 		return e.ErrorCompanyNameAlreadyUsed
+	}
+
+	if c.ReprService.UserService.EmailAlreadyUsed(
+		company.Representatives[0].User.Email) {
+		return e.ErrorEmailAlreadyUsed
 	}
 
 	err := c.CompanyRepo.Create(company)

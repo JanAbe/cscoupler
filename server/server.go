@@ -64,7 +64,7 @@ func (s *Server) initServices() {
 		UserService:        s.userService,
 	}
 
-	s.companyService.RepresentativeService = &s.representativeService
+	s.companyService.ReprService = &s.representativeService
 }
 
 func (s *Server) initHandlers() {

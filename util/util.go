@@ -7,7 +7,7 @@ import (
 )
 
 // URL is the base URL to the webserver
-var URL = "http://localhost:3000"
+var URL = "https://localhost:3000"
 
 // GetJWTSecret gets the jwt-secret from the provided file
 func GetJWTSecret(filepath string) []byte {
