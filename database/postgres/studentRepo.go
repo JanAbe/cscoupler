@@ -85,7 +85,7 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 		return []d.Student{}, err
 	}
 
-	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experience, s.status, 
+	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experience, s.status, s.resume,
 	u.user_id, u.first_name, u.last_name, u.email, u.role 
 	FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id`
 
@@ -99,14 +99,14 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 	students := []d.Student{}
 	for rows.Next() {
 		var (
-			sID, uni                       string
+			sID, uni, resume               string
 			uID, fname, lname, email, role string
 			skills, exp                    []string
 			status                         d.Status
 		)
 
 		if err := rows.Scan(&sID, &uni, pq.Array(&skills),
-			pq.Array(&exp), &status, &uID,
+			pq.Array(&exp), &status, &resume, &uID,
 			&fname, &lname, &email, &role); err != nil {
 			_ = tx.Rollback()
 			return []d.Student{}, err
@@ -146,13 +146,14 @@ func (s StudentRepo) CreateTx(tx *sql.Tx, student d.Student) error {
 		return err
 	}
 
-	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experience, status, ref_user) VALUES ($1, $2, $3, $4, $5, $6);`
+	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experience, status, resume, ref_user) VALUES ($1, $2, $3, $4, $5, $6, $7);`
 	_, err = tx.Exec(insertQuery,
 		student.ID,
 		student.University,
 		pq.Array(student.Skills),
 		pq.Array(student.Experience),
 		student.Status,
+		student.Resume,
 		student.User.ID,
 	)
 
@@ -169,13 +170,14 @@ func (s StudentRepo) CreateTx(tx *sql.Tx, student d.Student) error {
 // This is the responsibility of the caller.
 // It will rollback and return an error if something goes wrong
 func (s StudentRepo) UpdateTx(tx *sql.Tx, student d.Student) error {
-	const updateStudentQuery = `UPDATE "Student" s SET university=$1, skills=$2, experience=$3, 
-	status=$4 WHERE s.student_id=$5;`
+	const updateStudentQuery = `UPDATE "Student" s 
+	SET university=$1, skills=$2, experience=$3, status=$4, resume=$5 WHERE s.student_id=$6;`
 	_, err := tx.Exec(updateStudentQuery,
 		student.University,
 		pq.Array(student.Skills),
 		pq.Array(student.Experience),
 		student.Status,
+		student.Resume,
 		student.ID,
 	)
 
@@ -207,17 +209,17 @@ func (s StudentRepo) UpdateTx(tx *sql.Tx, student d.Student) error {
 // This is the responsibility of the caller.
 // It will rollback and return an error if something goes wrong
 func (s StudentRepo) FindByIDTx(tx *sql.Tx, id string) (d.Student, error) {
-	var uID, fname, lname, email, role string
+	var uID, fname, lname, email, role, resume string
 	var sID, uni string
 	var skills, exp []string
 	var status d.Status
 
-	const selectQuery = `SELECT student_id, s.university, s.skills, s.experience, s.status, 
+	const selectQuery = `SELECT student_id, s.university, s.skills, s.experience, s.status, s.resume,
 	user_id, u.first_name, u.last_name, u.email, u.role FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id
 	WHERE student_id=$1;`
 	result := tx.QueryRow(selectQuery, id)
 
-	err := result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &uID, &fname, &lname, &email, &role)
+	err := result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &resume, &uID, &fname, &lname, &email, &role)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Student{}, err
@@ -229,6 +231,7 @@ func (s StudentRepo) FindByIDTx(tx *sql.Tx, id string) (d.Student, error) {
 		Skills:     skills,
 		Experience: exp,
 		Status:     status,
+		Resume:     resume,
 		User: d.User{
 			ID:        uID,
 			Email:     email,

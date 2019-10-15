@@ -2,10 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/janabe/cscoupler/util"
 
 	"github.com/google/uuid"
 	"github.com/janabe/cscoupler/domain"
@@ -36,10 +41,16 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			return
 		}
 
+		resumePath, err := processResume(r)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		var data StudentData
 
 		// check if json is invalid
-		err := json.NewDecoder(r.Body).Decode(&data)
+		err = json.Unmarshal([]byte(r.FormValue("studentData")), &data)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -67,6 +78,7 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			data.Experience,
 			user,
 			domain.Available,
+			resumePath,
 		)
 
 		if err != nil {
@@ -100,18 +112,24 @@ func (s StudentHandler) EditStudent() http.Handler {
 		}
 
 		studentID := strings.TrimPrefix(r.URL.Path, s.Path+"edit/")
-
-		_, err := s.StudentService.FindByID(studentID)
+		student, err := s.StudentService.FindByID(studentID)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
+		resumePath, err := processResume(r)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		var updatedData StudentData
 
 		// check if json is invalid
-		err = json.NewDecoder(r.Body).Decode(&updatedData)
+		err = json.Unmarshal([]byte(r.FormValue("studentData")), &updatedData)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -139,6 +157,7 @@ func (s StudentHandler) EditStudent() http.Handler {
 			updatedData.Experience,
 			updatedUser,
 			domain.Available,
+			resumePath,
 		)
 
 		if err != nil {
@@ -151,6 +170,14 @@ func (s StudentHandler) EditStudent() http.Handler {
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest) // what header to return
+			return
+		}
+
+		// remove the old resume file of the student
+		err = os.Remove(student.Resume)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
@@ -186,4 +213,39 @@ func (s StudentHandler) Register() {
 	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchStudentByID())))
 	http.Handle(s.Path+"edit/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.StudentRole, s.EditStudent())))
 	http.Handle("/signup/student", LoggingHandler(os.Stdout, s.SignupStudent()))
+}
+
+// Helper func to extract the uploaded resume file
+// and store it on the server. It returns the absolute path
+// to this file
+func processResume(r *http.Request) (string, error) {
+	// Create copy of the sent file
+	r.ParseMultipartForm(32 << 20)
+	file, handler, err := r.FormFile("resume")
+	if err != nil {
+		return "", err
+	}
+
+	isPdf := util.HasCorrectContentType(file, "application/pdf")
+	if !isPdf {
+		return "", errors.New("incorrect content type")
+	}
+
+	defer file.Close()
+
+	resumePath, err := filepath.Abs("./resumes/" + uuid.New().String() + "-" + handler.Filename)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	dest, err := os.OpenFile(resumePath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer dest.Close()
+	io.Copy(dest, file)
+
+	return resumePath, nil
 }

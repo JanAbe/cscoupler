@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"mime/multipart"
+	"net/http"
 )
 
 // URL is the base URL to the webserver
@@ -52,4 +54,18 @@ func GetDSN(filepath string) string {
 
 type dsn struct {
 	DSN string `json:"dsn"`
+}
+
+// HasCorrectContentType checks if the file's
+// content type matches the wanted/expected content type
+func HasCorrectContentType(file multipart.File, ct string) bool {
+	buffer := make([]byte, 521)
+	_, err := file.Read(buffer)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	contentType := http.DetectContentType(buffer)
+	return ct == contentType
 }

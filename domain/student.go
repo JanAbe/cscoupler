@@ -13,7 +13,7 @@ type Student struct {
 	Experience []string
 	Status     Status
 	User       User
-	// iets met cv en afbeelding, hoe sla je dat op en hoe geef je het aan in de struct enz.
+	Resume     string // path to the resume of the student
 }
 
 // StudentRepository interface
@@ -29,7 +29,8 @@ func NewStudent(id, uni string,
 	skills []string,
 	exp []string,
 	user User,
-	status Status) (Student, error) {
+	status Status,
+	resume string) (Student, error) {
 
 	if len(strings.TrimSpace(uni)) == 0 {
 		return Student{}, errors.New("provided univeristy can't empty")
@@ -42,6 +43,7 @@ func NewStudent(id, uni string,
 		Experience: exp,
 		User:       user,
 		Status:     status,
+		Resume:     resume,
 	}, nil
 
 }

@@ -33,3 +33,5 @@
 .secret*
 /server/key.pem
 /server/cert.pem
+# dir to store all resumes
+/resumes/*  
