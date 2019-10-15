@@ -90,12 +90,12 @@ func (c CompanyRepo) FindByName(name string) (d.Company, error) {
 
 	company, err := c.FindByNameTx(tx, name)
 	if err != nil {
-		return d.Company{}, nil
+		return d.Company{}, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return d.Company{}, nil
+		return d.Company{}, err
 	}
 
 	return company, nil
