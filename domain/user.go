@@ -23,6 +23,7 @@ type UserRepository interface {
 	Create(user User) error
 	FindByID(id string) (User, error)
 	FindByEmail(email string) (User, error)
+	FindRoleID(user User) (string, error)
 }
 
 // NewUser creates a new user or returns an error when the hashing of the password fails

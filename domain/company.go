@@ -118,7 +118,7 @@ type Project struct {
 // NewProject creates a new Project based on the
 // provided input if all is valid, it returns
 // an error otherwise
-func NewProject(desc, comp, dur, companyID string) (Project, error) {
+func NewProject(desc, comp, dur, companyID string, recs []string) (Project, error) {
 	if len(strings.TrimSpace(desc)) == 0 {
 		return Project{}, errors.New("provided description can't be empty")
 	}
@@ -136,7 +136,7 @@ func NewProject(desc, comp, dur, companyID string) (Project, error) {
 		Description:     strings.ToLower(desc),
 		Compensation:    strings.ToLower(comp),
 		Duration:        strings.ToLower(dur),
-		Recommendations: []string{},
+		Recommendations: recs,
 		CompanyID:       companyID,
 	}, nil
 }

@@ -191,6 +191,7 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 		if req.Method != "POST" {
 			return
 		}
+
 		cookie, _ := req.Cookie("token")
 		token, _ := r.AuthHandler.GetToken(cookie)
 		reprID := token.Claims.(jwt.MapClaims)["ID"].(string)
@@ -214,6 +215,7 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 			data.Description,
 			data.Compensation,
 			data.Duration,
+			data.Recommendations,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -227,6 +229,8 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		json.NewEncoder(w).Encode(project.ID)
 	})
 }
 

@@ -42,6 +42,18 @@ func ToCompanyData(c d.Company) CompanyData {
 		companyData.Representatives = append(companyData.Representatives, reprData)
 	}
 
+	for _, p := range c.Projects {
+		pData := ProjectData{
+			Description:     p.Description,
+			Compensation:    p.Compensation,
+			Duration:        p.Duration,
+			Recommendations: p.Recommendations,
+			CompanyID:       p.CompanyID,
+		}
+
+		companyData.Projects = append(companyData.Projects, pData)
+	}
+
 	return companyData
 }
 

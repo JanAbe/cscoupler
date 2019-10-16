@@ -32,6 +32,45 @@ func (u UserRepo) Create(user d.User) error {
 	return nil
 }
 
+// FindRoleID finds the id of the role the user has
+// So if the user is a student, FindRoleID will find the id
+// of the student that is associated with the provided user
+// account. It should be used as a single unit of work,
+// as it has its own transaction inside
+func (u UserRepo) FindRoleID(user d.User) (string, error) {
+	tx, err := u.DB.Begin()
+	if err != nil {
+		return "", err
+	}
+
+	var roleID string
+
+	if user.Role == d.StudentRole {
+		const query = `SELECT student_id FROM "Student" WHERE ref_user=$1;`
+		result := tx.QueryRow(query, user.ID)
+		err = result.Scan(&roleID)
+		if err != nil {
+			_ = tx.Rollback()
+			return "", err
+		}
+	} else if user.Role == d.RepresentativeRole {
+		const query = `SELECT representative_id FROM "Representative" WHERE ref_user=$1;`
+		result := tx.QueryRow(query, user.ID)
+		err = result.Scan(&roleID)
+		if err != nil {
+			_ = tx.Rollback()
+			return "", err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return "", err
+	}
+
+	return roleID, nil
+}
+
 // FindByID finds a user in the DB based on id. It should be used as a single
 // unit of work, as it has its own transaction inside.
 func (u UserRepo) FindByID(id string) (d.User, error) {

@@ -51,3 +51,12 @@ func (u UserService) ValidatePassword(hashedPassword, password string) bool {
 
 	return true
 }
+
+// FindRoleID is used to get the id of the role the user has
+// So if the user is a student, FindRoleID will find the id
+// of the student that is associated with the provided user
+// account.
+func (u UserService) FindRoleID(user domain.User) (string, error) {
+	roleID, err := u.UserRepo.FindRoleID(user)
+	return roleID, err
+}

@@ -26,6 +26,7 @@ type CompanyData struct {
 	Information     string               `json:"information"`
 	Locations       []LocationData       `json:"locations"`
 	Representatives []RepresentativeData `json:"representatives"`
+	Projects        []ProjectData        `json:"projects"`
 }
 
 // LocationData is a struct that corresponds to incoming location data
@@ -39,12 +40,12 @@ type LocationData struct {
 
 // ProjectData is a struct that corresponds to incoming project data
 type ProjectData struct {
-	ID              string   `json:"id", omitempty`
+	ID              string   `json:"id"`
 	Description     string   `json:"description"`
 	Compensation    string   `json:"compensation"`
 	Duration        string   `json:"duration"`
 	Recommendations []string `json:"recommendations"`
-	CompanyID       string   `json:"companyID", omitempty`
+	CompanyID       string   `json:"companyID"`
 }
 
 // SignupCompany signs up a company and the main representative

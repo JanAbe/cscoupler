@@ -34,6 +34,7 @@ type UserData struct {
 
 // Claims is a struct to convey the second part of the JWT (sometimes called payload)
 type Claims struct {
+	ID     string
 	Email  string
 	UserID string
 	jwt.StandardClaims
@@ -71,10 +72,18 @@ func (a AuthHandler) Signin() http.Handler {
 			return
 		}
 
+		roleID, err := a.UserService.FindRoleID(user)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		// Build the claims part of the JWT and
 		// set the expiration time of the JWT (todo: find out what a good time is)
 		expirationTime := time.Now().Add(6 * time.Hour)
 		claims := &Claims{
+			ID:     roleID,
 			Email:  user.Email,
 			UserID: user.ID,
 			StandardClaims: jwt.StandardClaims{
@@ -135,13 +144,13 @@ func (a AuthHandler) Validate(role string, h http.Handler) http.Handler {
 		}
 
 		claims := token.Claims.(jwt.MapClaims)
-		userID, ok := claims["Email"].(string)
+		userEmail, ok := claims["Email"].(string)
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		user, err := a.UserService.FindByEmail(userID)
+		user, err := a.UserService.FindByEmail(userEmail)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusNotFound)

@@ -63,6 +63,6 @@ func (r Representative) GenerateInviteLink(inviteLinkID, urlTemplate string) (In
 
 // CreateProject creates a new project for the company of
 // the representative
-func (r Representative) CreateProject(desc, comp, dur string) (Project, error) {
-	return NewProject(desc, comp, dur, r.CompanyID)
+func (r Representative) CreateProject(desc, comp, dur string, recs []string) (Project, error) {
+	return NewProject(desc, comp, dur, r.CompanyID, recs)
 }

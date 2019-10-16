@@ -143,11 +143,11 @@ func (c CompanyRepo) AddProject(p d.Project) error {
 		return err
 	}
 
-	const query = `INSERT INTO "Project"(project_id, description, 
+	const insertQuery = `INSERT INTO "Project"(project_id, description, 
 	compensation, duration, recommendations, ref_company)
 	VALUES($1, $2, $3, $4, $5, $6);`
 
-	_, err = tx.Exec(query,
+	_, err = tx.Exec(insertQuery,
 		p.ID,
 		p.Description,
 		p.Compensation,
