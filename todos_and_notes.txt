@@ -5,6 +5,9 @@ company-users.
 ======
 todo:
 
+also return resume.pdf when a student
+is fetched
+
 look into cookie attributes and other safety measures
 
 look into update/edit student account. What fields should the user

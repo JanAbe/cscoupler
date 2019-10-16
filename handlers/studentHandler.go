@@ -31,6 +31,8 @@ type StudentData struct {
 	University string   `json:"university"`
 	Skills     []string `json:"skills"`
 	Experience []string `json:"experience"`
+	Status     string   `json:"status"`
+	Resume     string   `json:"resume"`
 	UserData   UserData `json:"user"`
 }
 
@@ -203,7 +205,6 @@ func (s StudentHandler) FetchStudentByID() http.Handler {
 		}
 
 		studentData := ToStudentData(student)
-
 		json.NewEncoder(w).Encode(studentData)
 	})
 }

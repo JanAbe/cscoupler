@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+
 	d "github.com/janabe/cscoupler/domain"
 )
 
@@ -50,6 +52,8 @@ func ToStudentData(s d.Student) StudentData {
 		University: s.University,
 		Skills:     s.Skills,
 		Experience: s.Experience,
+		Status:     strconv.Itoa(int(uint8(s.Status))),
+		Resume:     s.Resume,
 		UserData: UserData{
 			Email:     s.User.Email,
 			Firstname: s.User.FirstName,
