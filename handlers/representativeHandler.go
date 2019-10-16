@@ -33,7 +33,7 @@ type RepresentativeData struct {
 
 // SignupRepresentative signs up a representative and binds
 // it to the companyID present in the invite-link URL
-// Format for invite-links: /signup/representatives/invite/[companyID]
+// Format for invite-links: /signup/representatives/invite/[companyID]/[invitelinkID]
 func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method != "POST" {
@@ -154,18 +154,15 @@ func (r RepresentativeHandler) FetchRepresentativeByID() http.Handler {
 
 // MakeInviteLink makes an invite link for the representative to sent
 // to colleagues.
-// Created invite link format: /signup/representatives/invite/<[companyID]>
-// don't know if the url below is the best format for this request.
-// /representatives/invitelink/[representativeID] = used to create and get an invite link
 func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method != "POST" {
 			return
 		}
 
-		// or should the representative ID be sent as json instead of in URL
-		// or read from the jwt
-		representativeID := strings.TrimPrefix(req.URL.Path, r.Path+"invitelink/")
+		cookie, _ := req.Cookie("token")
+		token, _ := r.AuthHandler.GetToken(cookie)
+		representativeID := token.Claims.(jwt.MapClaims)["ID"].(string)
 
 		repr, err := r.RepresentativeService.FindByID(representativeID)
 		if err != nil {
