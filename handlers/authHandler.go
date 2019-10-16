@@ -118,15 +118,7 @@ func (a AuthHandler) Validate(role string, h http.Handler) http.Handler {
 			return
 		}
 
-		tokenString := cookie.Value
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Incorrect Signing method used: %v", token.Header["alg"])
-			}
-
-			return a.JWTKey, nil
-		})
-
+		token, err := a.GetToken(cookie)
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
 				w.WriteHeader(http.StatusUnauthorized)
@@ -171,4 +163,18 @@ func (a AuthHandler) Validate(role string, h http.Handler) http.Handler {
 // Register registers all authentication related handlers
 func (a AuthHandler) Register() {
 	http.Handle("/signin", LoggingHandler(os.Stdout, a.Signin()))
+}
+
+// GetToken gets the token from the cookie
+func (a AuthHandler) GetToken(cookie *http.Cookie) (*jwt.Token, error) {
+	tokenString := cookie.Value
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Incorrect Signing method used: %v", token.Header["alg"])
+		}
+
+		return a.JWTKey, nil
+	})
+
+	return token, err
 }

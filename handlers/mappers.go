@@ -79,3 +79,18 @@ func ToRepresentativeData(r d.Representative) RepresentativeData {
 
 	return representativeData
 }
+
+// ToProjectData maps a project domain struct
+// to a projectData struct
+func ToProjectData(p d.Project) ProjectData {
+	projectData := ProjectData{
+		ID:              p.ID,
+		Description:     p.Description,
+		Compensation:    p.Compensation,
+		Duration:        p.Duration,
+		Recommendations: p.Recommendations,
+		CompanyID:       p.CompanyID,
+	}
+
+	return projectData
+}

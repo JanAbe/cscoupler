@@ -60,3 +60,9 @@ func (r Representative) GenerateInviteLink(inviteLinkID, urlTemplate string) (In
 		time.Hour*24,
 	), nil
 }
+
+// CreateProject creates a new project for the company of
+// the representative
+func (r Representative) CreateProject(desc, comp, dur string) (Project, error) {
+	return NewProject(desc, comp, dur, r.CompanyID)
+}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
 	"github.com/janabe/cscoupler/services"
@@ -183,9 +185,55 @@ func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 	})
 }
 
+// AddProject adds a project to the company
+func (r RepresentativeHandler) AddProject() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "POST" {
+			return
+		}
+		cookie, _ := req.Cookie("token")
+		token, _ := r.AuthHandler.GetToken(cookie)
+		reprID := token.Claims.(jwt.MapClaims)["ID"].(string)
+
+		var data ProjectData
+		err := json.NewDecoder(req.Body).Decode(&data)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		repr, err := r.RepresentativeService.FindByID(reprID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		project, err := repr.CreateProject(
+			data.Description,
+			data.Compensation,
+			data.Duration,
+		)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = r.RepresentativeService.CompanyService.AddProject(project)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	})
+}
+
 // Register registers all representative related handlers
 func (r RepresentativeHandler) Register() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate("", r.FetchRepresentativeByID())))
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))
 	http.Handle(r.Path+"invitelink/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.MakeInviteLink())))
+	http.Handle(r.Path+"projects/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.AddProject())))
 }

@@ -37,6 +37,16 @@ type LocationData struct {
 	Number  string `json:"number"`
 }
 
+// ProjectData is a struct that corresponds to incoming project data
+type ProjectData struct {
+	ID              string   `json:"id", omitempty`
+	Description     string   `json:"description"`
+	Compensation    string   `json:"compensation"`
+	Duration        string   `json:"duration"`
+	Recommendations []string `json:"recommendations"`
+	CompanyID       string   `json:"companyID", omitempty`
+}
+
 // SignupCompany signs up a company and the main representative
 // of this company
 func (c CompanyHandler) SignupCompany() http.Handler {

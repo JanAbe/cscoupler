@@ -60,3 +60,13 @@ func (c CompanyService) NameAlreadyUsed(name string) bool {
 
 	return true
 }
+
+// AddProject adds a project to the company
+func (c CompanyService) AddProject(p domain.Project) error {
+	err := c.CompanyRepo.AddProject(p)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

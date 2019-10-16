@@ -135,6 +135,40 @@ func (c CompanyRepo) FindAll() ([]d.Company, error) {
 	return companies, nil
 }
 
+// AddProject adds a project to the company in the db. It should be used as a
+// single unit of work, as it has its own transaction inside.
+func (c CompanyRepo) AddProject(p d.Project) error {
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	const query = `INSERT INTO "Project"(project_id, description, 
+	compensation, duration, recommendations, ref_company)
+	VALUES($1, $2, $3, $4, $5, $6);`
+
+	_, err = tx.Exec(query,
+		p.ID,
+		p.Description,
+		p.Compensation,
+		p.Duration,
+		pq.Array(p.Recommendations),
+		p.CompanyID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FindByIDTx finds a company in the DB based on id. It should be used as PART of a
 // unit of work, as a transaction gets passed in but will not be committed.
 // This is the responsibility of the caller.

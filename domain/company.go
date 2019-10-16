@@ -22,6 +22,7 @@ type CompanyRepository interface {
 	FindAll() ([]Company, error)
 	FindByID(id string) (Company, error)
 	FindByName(name string) (Company, error)
+	AddProject(p Project) error
 }
 
 // Company struct conveying a company
