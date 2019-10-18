@@ -68,7 +68,7 @@ func ToStudentData(s d.Student) StudentData {
 		University: s.University,
 		Skills:     s.Skills,
 		Experience: s.Experience,
-		Status:     strconv.Itoa(int(uint8(s.Status))),
+		Status:     ToStatus(strconv.Itoa(int(uint8(s.Status)))),
 		Resume:     s.Resume,
 		UserData: UserData{
 			Email:     s.User.Email,
@@ -109,4 +109,18 @@ func ToProjectData(p d.Project) ProjectData {
 	}
 
 	return projectData
+}
+
+// ToStatus transforms the status number
+// to the corresponding string representation
+func ToStatus(num string) string {
+	if num == "0" {
+		return "Available"
+	}
+
+	if num == "1" {
+		return "Unavailable"
+	}
+
+	return num
 }
