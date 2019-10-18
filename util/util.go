@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"strings"
 )
 
 // URL is the base URL to the webserver
@@ -68,4 +69,20 @@ func HasCorrectContentType(file multipart.File, ct string) bool {
 
 	contentType := http.DetectContentType(buffer)
 	return ct == contentType
+}
+
+// Capitalize returns a capitalized copy of the word
+func Capitalize(word string) string {
+	w := strings.ToUpper(string(word[0]))
+	return w + word[1:]
+}
+
+// CapitalizeLastWord capitalizes the last word
+// of the provided string.
+// e.g word="van der bilt"
+// result="van der Bilt"
+func CapitalizeLastWord(word string) string {
+	words := strings.Split(word, " ")
+	last := words[len(words)-1]
+	return strings.Replace(word, last, Capitalize(last), 1)
 }

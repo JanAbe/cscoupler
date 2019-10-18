@@ -5,6 +5,13 @@ company-users.
 ======
 todo:
 
+extend logging middleware, log more things. e.g. who makes the request
+etc.
+
+transform the fields of the structs so they look nice.
+e.g firstname must be transformed to capitalized version,
+etc.
+
 add query params for /students/all, so the client can specify
 how many students they want. Otherwise all students are returned all
 the time.

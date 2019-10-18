@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"strconv"
+	"strings"
+
+	"github.com/janabe/cscoupler/util"
 
 	d "github.com/janabe/cscoupler/domain"
 )
@@ -69,8 +72,8 @@ func ToStudentData(s d.Student) StudentData {
 		Resume:     s.Resume,
 		UserData: UserData{
 			Email:     s.User.Email,
-			Firstname: s.User.FirstName,
-			Lastname:  s.User.LastName,
+			Firstname: strings.Title(s.User.FirstName),
+			Lastname:  util.CapitalizeLastWord(s.User.LastName),
 		},
 	}
 
