@@ -5,8 +5,13 @@ company-users.
 ======
 todo:
 
-also return resume.pdf when a student
-is fetched
+look into renaming of routes/endpoints. They don't really make sense.
+
+maybe add an ordering to the skills of the student
+so they can say in which skills they are most skilled.
+At the other hand, this sounds pretty stupid.
+
+look into security in combination with jwt, how to invalidate a token
 
 look into cookie attributes and other safety measures
 
@@ -17,11 +22,6 @@ When can they edit those.
 look at errors returned, and at the errors looked for in the 
 handlers. This isn't correct atm.
 
-improve error messages, they suck for some reason. Probably my fault, idk though
-they are kinda flipping useless in debugging
-
-update readme with a section about which endpoints cscoupler has
-
 use docker
 
 rename all files to snake case equivalent
@@ -30,50 +30,12 @@ student_repo intead of studentRepo
 improve error messages, atm i print some message,
 but there is no stack trace. sooo it sucks massively
 
-!!!
-use transactions better!!!
-
-problems with transactions:
-how to use one transaction between multiple functions
-from different repositories?
-
-If i pass a transaction as an argument, the service
-class is more tightly coupled, because it knows SQL is used.
-Even more coupled than i thought, because you need a pointer to a sql.DB
-in order to create a transaction.
-
-Maybe i can add an extra class of indirection/abstraction above the
-implementations of the repositories. But then the services would 
-depend on these classes, and then the whole repository thing is kinda meh.
-
----
-So this doesn't work, because the interface doesn't know about the field:
-or i could maybe pass the *DB to all repositories, then the service class
-can call this public *DB field of the repository to create a transaction
-and pass it to all the repository functions.
----
- 
-:c
-!!!
-======
-
-!!! ------
-should a company have multiple accounts linked to it or not.
-If this isn't the case, only one person can post projects and 
-approach students. If it is the case, i need to find a way to create
-users bound to a company. Maybe through invite-links?
-The main company user creates the company-main-account, setting all info
-regarding the company. Then, he can create invite links to send to colleagues.
-If an account is created from an invite link, the account is bound to the company.
-This account also needs to supply different data when creating the account.
-
-maybe make a Student, Company (is actually company main account), and Representative (is account bound to a company)
-
+------
 But what happens if a student wants to comment on a posted project of a company.
 Does this message get sent to a random representative of this company?
 Or can the user chose one of the representatives that the company has, and sent a message to
 the selected one?
------- !!! 
+------ 
 
 create client for cscoupler, probably in a different repo called vue-cscoupler or client-cscoupler
 the only thing is that if client-cscoupler is used, how should other clients be called which are made

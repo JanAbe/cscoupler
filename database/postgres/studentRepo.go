@@ -118,6 +118,7 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 			Skills:     skills,
 			Experience: exp,
 			Status:     status,
+			Resume:     resume,
 			User: d.User{
 				ID:        uID,
 				Email:     email,
