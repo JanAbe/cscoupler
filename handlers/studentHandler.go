@@ -212,7 +212,7 @@ func (s StudentHandler) FetchStudentByID() http.Handler {
 // FetchAllStudents fetches all the students
 func (s StudentHandler) FetchAllStudents() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
+		if r.Method != "GET" && r.Method != "OPTIONS" {
 			return
 		}
 
@@ -237,7 +237,7 @@ func (s StudentHandler) Register() {
 	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchStudentByID())))
 	http.Handle(s.Path+"edit/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.StudentRole, s.EditStudent())))
 	http.Handle("/signup/student", LoggingHandler(os.Stdout, s.SignupStudent()))
-	http.Handle(s.Path+"all/", LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchAllStudents())))
+	http.Handle(s.Path+"all/", LoggingHandler(os.Stdout, s.FetchAllStudents()))
 }
 
 // Helper func to extract the uploaded resume file

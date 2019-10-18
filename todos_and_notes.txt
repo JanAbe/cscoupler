@@ -5,6 +5,9 @@ company-users.
 ======
 todo:
 
+look into cors. i added a Go library to allow crosse origin requests.
+this way requests can be made from the cscoupler-client
+
 look into renaming of routes/endpoints. They don't really make sense.
 
 maybe add an ordering to the skills of the student

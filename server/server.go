@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/rs/cors"
+
 	pg "github.com/janabe/cscoupler/database/postgres"
 	d "github.com/janabe/cscoupler/domain"
 	"github.com/janabe/cscoupler/handlers"
@@ -43,7 +45,9 @@ func NewServer(db *sql.DB) *Server {
 func (s *Server) Run() {
 	fmt.Println("Running server, listening on port 3000...")
 	// log.Fatal(http.ListenAndServeTLS(":3000", "./server/cert.pem", "./server/key.pem", nil))
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	mux := http.DefaultServeMux
+	h := cors.Default().Handler(mux)
+	log.Fatal(http.ListenAndServe(":3000", h))
 }
 
 func (s *Server) initRepos() {
