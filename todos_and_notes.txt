@@ -5,6 +5,10 @@ company-users.
 ======
 todo:
 
+add query params for /students/all, so the client can specify
+how many students they want. Otherwise all students are returned all
+the time.
+
 look into cors. i added a Go library to allow crosse origin requests.
 this way requests can be made from the cscoupler-client
 

@@ -28,6 +28,7 @@ type StudentHandler struct {
 
 // StudentData is a struct that corresponds to incoming student data
 type StudentData struct {
+	ID         string   `json:"id"`
 	University string   `json:"university"`
 	Skills     []string `json:"skills"`
 	Experience []string `json:"experience"`

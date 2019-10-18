@@ -61,6 +61,7 @@ func ToCompanyData(c d.Company) CompanyData {
 // a studentData struct
 func ToStudentData(s d.Student) StudentData {
 	studentData := StudentData{
+		ID:         s.ID,
 		University: s.University,
 		Skills:     s.Skills,
 		Experience: s.Experience,
