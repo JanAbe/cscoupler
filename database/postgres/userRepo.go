@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	d "github.com/janabe/cscoupler/domain"
+	e "github.com/janabe/cscoupler/errors"
+	"github.com/lib/pq"
 )
 
 // UserRepo struct for postgres db
@@ -130,6 +132,10 @@ func (u UserRepo) CreateTx(tx *sql.Tx, user d.User) error {
 	)
 
 	if err != nil {
+		if err.(*pq.Error).Code.Name() == "unique_violation" {
+			_ = tx.Rollback()
+			return e.ErrorEmailAlreadyUsed
+		}
 		_ = tx.Rollback()
 		return err
 	}

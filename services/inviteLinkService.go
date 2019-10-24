@@ -21,6 +21,8 @@ type InviteLinkService struct {
 // for new representatives.
 // Path should be a relative path, like: /signup/representatives/
 func (i InviteLinkService) CreateRepresentativeInvite(path string, r d.Representative) (d.InviteLink, error) {
+	// todo: replace util.URL to the domain name of the client, otherwise the created invitelink
+	// points to the endpoint of the server and not to the front-end
 	urlTemplate := util.URL + "/signup" + path + "invite/<[companyID]>/<[inviteID]>"
 	inviteLinkID := uuid.New().String()
 	inviteLink, err := r.GenerateInviteLink(inviteLinkID, urlTemplate)

@@ -164,8 +164,31 @@ func (c CompanyHandler) FetchCompanyByID() http.Handler {
 	})
 }
 
+// FetchCompanyNameByID fetches the name of the company
+// based on ID
+func (c CompanyHandler) FetchCompanyNameByID() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			return
+		}
+
+		id := strings.TrimPrefix(r.URL.Path, c.Path+"name/")
+		company, err := c.CompanyService.FindByID(id)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		companyData := ToCompanyData(company)
+
+		json.NewEncoder(w).Encode(companyData.Name)
+	})
+}
+
 // Register registers all company related handlers
 func (c CompanyHandler) Register() {
 	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate("", c.FetchCompanyByID())))
+	http.Handle("/companies/name/", LoggingHandler(os.Stdout, c.FetchCompanyNameByID()))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
 }
