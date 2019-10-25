@@ -46,7 +46,12 @@ func (s *Server) Run() {
 	fmt.Println("Running server, listening on port 3000...")
 	// log.Fatal(http.ListenAndServeTLS(":3000", "./server/cert.pem", "./server/key.pem", nil))
 	mux := http.DefaultServeMux
-	h := cors.Default().Handler(mux)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8080"},
+		AllowCredentials: true,
+	})
+	h := c.Handler(mux)
+	// h := cors.Default().Handler(mux)
 	log.Fatal(http.ListenAndServe(":3000", h))
 }
 
