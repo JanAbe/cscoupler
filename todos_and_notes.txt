@@ -5,6 +5,9 @@ company-users.
 ======
 todo:
 
+replace that statuses of the students from 'available' and 'unavailable'
+to 'student' and possible 'newly graduate' 
+
 extend logging middleware, log more things. e.g. who makes the request
 etc.
 
