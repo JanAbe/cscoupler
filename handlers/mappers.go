@@ -64,12 +64,13 @@ func ToCompanyData(c d.Company) CompanyData {
 // a studentData struct
 func ToStudentData(s d.Student) StudentData {
 	studentData := StudentData{
-		ID:         s.ID,
-		University: s.University,
-		Skills:     s.Skills,
-		Experience: s.Experience,
-		Status:     ToStatus(strconv.Itoa(int(uint8(s.Status)))),
-		Resume:     s.Resume,
+		ID:               s.ID,
+		University:       s.University,
+		Skills:           s.Skills,
+		Experiences:      s.Experiences,
+		ShortExperiences: s.ShortExperiences,
+		Status:           ToStatus(strconv.Itoa(int(uint8(s.Status)))),
+		Resume:           s.Resume,
 		UserData: UserData{
 			Email:     s.User.Email,
 			Firstname: strings.Title(s.User.FirstName),

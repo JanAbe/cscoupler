@@ -28,13 +28,14 @@ type StudentHandler struct {
 
 // StudentData is a struct that corresponds to incoming student data
 type StudentData struct {
-	ID         string   `json:"id"`
-	University string   `json:"university"`
-	Skills     []string `json:"skills"`
-	Experience []string `json:"experience"`
-	Status     string   `json:"status"`
-	Resume     string   `json:"resume"`
-	UserData   UserData `json:"user"`
+	ID               string   `json:"id"`
+	University       string   `json:"university"`
+	Skills           []string `json:"skills"`
+	Experiences      []string `json:"experiences"`
+	ShortExperiences []string `json:"shortExperiences"`
+	Status           string   `json:"status"`
+	Resume           string   `json:"resume"`
+	UserData         UserData `json:"user"`
 }
 
 // SignupStudent signs up a new student
@@ -78,7 +79,8 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			uuid.New().String(),
 			data.University,
 			data.Skills,
-			data.Experience,
+			data.Experiences,
+			data.ShortExperiences,
 			user,
 			domain.Available,
 			resumePath,
@@ -157,7 +159,8 @@ func (s StudentHandler) EditStudent() http.Handler {
 			studentID,
 			updatedData.University,
 			updatedData.Skills,
-			updatedData.Experience,
+			updatedData.Experiences,
+			updatedData.ShortExperiences,
 			updatedUser,
 			domain.Available,
 			resumePath,

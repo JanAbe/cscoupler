@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS "Student" (
     student_id UUID PRIMARY KEY,
     university TEXT,
     skills TEXT[],
-    experience TEXT[],
+    experiences TEXT[],
+    short_experiences TEXT[],
     "status" TEXT NOT NULL,
     "resume" TEXT,
     ref_user UUID REFERENCES "User" (user_id)

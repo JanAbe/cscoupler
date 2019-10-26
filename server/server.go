@@ -49,6 +49,7 @@ func (s *Server) Run() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080"},
 		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT"},
 	})
 	h := c.Handler(mux)
 	// h := cors.Default().Handler(mux)

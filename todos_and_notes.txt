@@ -5,6 +5,15 @@ company-users.
 ======
 todo:
 
+add support for whishes to the student struct, the student can display his whishes in this string
+
+maybe make it so only company recruiters/representatives can view the profiles and cards of
+students. Most people wouldn't want other students look into their profile / resume.
+add validate check so only users with the role 'representative' can call findStudentbyID
+Problem it must also be possible to view your own profile. So findStudentByID must be
+callable by representatives and by the owner of the profile.
+How to do this?
+
 replace that statuses of the students from 'available' and 'unavailable'
 to 'student' and possible 'newly graduate' 
 

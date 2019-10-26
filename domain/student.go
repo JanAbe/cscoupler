@@ -7,13 +7,14 @@ import (
 
 // Student struct
 type Student struct {
-	ID         string
-	University string
-	Skills     []string
-	Experience []string
-	Status     Status
-	User       User
-	Resume     string // path to the resume of the student
+	ID               string
+	University       string
+	Skills           []string
+	Experiences      []string
+	ShortExperiences []string
+	Status           Status
+	User             User
+	Resume           string // path to the resume of the student
 }
 
 // StudentRepository interface
@@ -27,7 +28,8 @@ type StudentRepository interface {
 // NewStudent creates a new student based on the provided input args
 func NewStudent(id, uni string,
 	skills []string,
-	exp []string,
+	experiences []string,
+	shortExperiences []string,
 	user User,
 	status Status,
 	resume string) (Student, error) {
@@ -37,13 +39,14 @@ func NewStudent(id, uni string,
 	}
 
 	return Student{
-		ID:         id,
-		University: strings.ToLower(uni),
-		Skills:     skills,
-		Experience: exp,
-		User:       user,
-		Status:     status,
-		Resume:     resume,
+		ID:               id,
+		University:       strings.ToLower(uni),
+		Skills:           skills,
+		Experiences:      experiences,
+		ShortExperiences: shortExperiences,
+		User:             user,
+		Status:           status,
+		Resume:           resume,
 	}, nil
 
 }

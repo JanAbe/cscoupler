@@ -85,8 +85,8 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 		return []d.Student{}, err
 	}
 
-	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experience, s.status, s.resume,
-	u.user_id, u.first_name, u.last_name, u.email, u.role 
+	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experiences, s.short_experiences, 
+	s.status, s.resume, u.user_id, u.first_name, u.last_name, u.email, u.role 
 	FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id`
 
 	rows, err := tx.Query(selectQuery)
@@ -99,26 +99,27 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 	students := []d.Student{}
 	for rows.Next() {
 		var (
-			sID, uni, resume               string
-			uID, fname, lname, email, role string
-			skills, exp                    []string
-			status                         d.Status
+			sID, uni, resume                      string
+			uID, fname, lname, email, role        string
+			skills, experiences, shortExperiences []string
+			status                                d.Status
 		)
 
 		if err := rows.Scan(&sID, &uni, pq.Array(&skills),
-			pq.Array(&exp), &status, &resume, &uID,
-			&fname, &lname, &email, &role); err != nil {
+			pq.Array(&experiences), pq.Array(&shortExperiences),
+			&status, &resume, &uID, &fname, &lname, &email, &role); err != nil {
 			_ = tx.Rollback()
 			return []d.Student{}, err
 		}
 
 		students = append(students, d.Student{
-			ID:         sID,
-			University: uni,
-			Skills:     skills,
-			Experience: exp,
-			Status:     status,
-			Resume:     resume,
+			ID:               sID,
+			University:       uni,
+			Skills:           skills,
+			Experiences:      experiences,
+			ShortExperiences: shortExperiences,
+			Status:           status,
+			Resume:           resume,
 			User: d.User{
 				ID:        uID,
 				Email:     email,
@@ -147,12 +148,13 @@ func (s StudentRepo) CreateTx(tx *sql.Tx, student d.Student) error {
 		return err
 	}
 
-	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experience, status, resume, ref_user) VALUES ($1, $2, $3, $4, $5, $6, $7);`
+	const insertQuery = `INSERT INTO "Student"(student_id, university, skills, experiences, short_experiences, status, resume, ref_user) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 	_, err = tx.Exec(insertQuery,
 		student.ID,
 		student.University,
 		pq.Array(student.Skills),
-		pq.Array(student.Experience),
+		pq.Array(student.Experiences),
+		pq.Array(student.ShortExperiences),
 		student.Status,
 		student.Resume,
 		student.User.ID,
@@ -172,11 +174,12 @@ func (s StudentRepo) CreateTx(tx *sql.Tx, student d.Student) error {
 // It will rollback and return an error if something goes wrong
 func (s StudentRepo) UpdateTx(tx *sql.Tx, student d.Student) error {
 	const updateStudentQuery = `UPDATE "Student" s 
-	SET university=$1, skills=$2, experience=$3, status=$4, resume=$5 WHERE s.student_id=$6;`
+	SET university=$1, skills=$2, experiences=$3, short_experiences=$4, status=$5, resume=$6 WHERE s.student_id=$7;`
 	_, err := tx.Exec(updateStudentQuery,
 		student.University,
 		pq.Array(student.Skills),
-		pq.Array(student.Experience),
+		pq.Array(student.Experiences),
+		pq.Array(student.ShortExperiences),
 		student.Status,
 		student.Resume,
 		student.ID,
@@ -212,27 +215,28 @@ func (s StudentRepo) UpdateTx(tx *sql.Tx, student d.Student) error {
 func (s StudentRepo) FindByIDTx(tx *sql.Tx, id string) (d.Student, error) {
 	var uID, fname, lname, email, role, resume string
 	var sID, uni string
-	var skills, exp []string
+	var skills, exp, shortExp []string
 	var status d.Status
 
-	const selectQuery = `SELECT student_id, s.university, s.skills, s.experience, s.status, s.resume,
+	const selectQuery = `SELECT student_id, s.university, s.skills, s.experiences, s.short_experiences, s.status, s.resume,
 	user_id, u.first_name, u.last_name, u.email, u.role FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id
 	WHERE student_id=$1;`
 	result := tx.QueryRow(selectQuery, id)
 
-	err := result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), &status, &resume, &uID, &fname, &lname, &email, &role)
+	err := result.Scan(&sID, &uni, pq.Array(&skills), pq.Array(&exp), pq.Array(&shortExp), &status, &resume, &uID, &fname, &lname, &email, &role)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Student{}, err
 	}
 
 	return d.Student{
-		ID:         sID,
-		University: uni,
-		Skills:     skills,
-		Experience: exp,
-		Status:     status,
-		Resume:     resume,
+		ID:               sID,
+		University:       uni,
+		Skills:           skills,
+		Experiences:      exp,
+		ShortExperiences: shortExp,
+		Status:           status,
+		Resume:           resume,
 		User: d.User{
 			ID:        uID,
 			Email:     email,
