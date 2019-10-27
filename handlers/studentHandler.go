@@ -33,6 +33,7 @@ type StudentData struct {
 	Skills           []string `json:"skills"`
 	Experiences      []string `json:"experiences"`
 	ShortExperiences []string `json:"shortExperiences"`
+	Wishes           string   `json:"wishes"`
 	Status           string   `json:"status"`
 	Resume           string   `json:"resume"`
 	UserData         UserData `json:"user"`
@@ -81,6 +82,7 @@ func (s StudentHandler) SignupStudent() http.Handler {
 			data.Skills,
 			data.Experiences,
 			data.ShortExperiences,
+			data.Wishes,
 			user,
 			domain.Available,
 			resumePath,
@@ -161,6 +163,7 @@ func (s StudentHandler) EditStudent() http.Handler {
 			updatedData.Skills,
 			updatedData.Experiences,
 			updatedData.ShortExperiences,
+			updatedData.Wishes,
 			updatedUser,
 			domain.Available,
 			resumePath,

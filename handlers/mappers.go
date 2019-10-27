@@ -69,6 +69,7 @@ func ToStudentData(s d.Student) StudentData {
 		Skills:           s.Skills,
 		Experiences:      s.Experiences,
 		ShortExperiences: s.ShortExperiences,
+		Wishes:           s.Wishes,
 		Status:           ToStatus(strconv.Itoa(int(uint8(s.Status)))),
 		Resume:           s.Resume,
 		UserData: UserData{

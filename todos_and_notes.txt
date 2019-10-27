@@ -5,7 +5,8 @@ company-users.
 ======
 todo:
 
-add support for whishes to the student struct, the student can display his whishes in this string
+look into giving all fields of student a default value like '' or something (fields: wishes, shortExperiences, etc.)
+otherwise there's a sql error because it doesn't support storing nil values into a string.
 
 maybe make it so only company recruiters/representatives can view the profiles and cards of
 students. Most people wouldn't want other students look into their profile / resume.

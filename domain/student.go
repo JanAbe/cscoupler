@@ -12,6 +12,7 @@ type Student struct {
 	Skills           []string
 	Experiences      []string
 	ShortExperiences []string
+	Wishes           string
 	Status           Status
 	User             User
 	Resume           string // path to the resume of the student
@@ -30,6 +31,7 @@ func NewStudent(id, uni string,
 	skills []string,
 	experiences []string,
 	shortExperiences []string,
+	wishes string,
 	user User,
 	status Status,
 	resume string) (Student, error) {
@@ -44,6 +46,7 @@ func NewStudent(id, uni string,
 		Skills:           skills,
 		Experiences:      experiences,
 		ShortExperiences: shortExperiences,
+		Wishes:           wishes,
 		User:             user,
 		Status:           status,
 		Resume:           resume,
