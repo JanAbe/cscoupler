@@ -247,6 +247,8 @@ func (s StudentHandler) Register() {
 	http.Handle(s.Path+"all/", LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchAllStudents())))
 }
 
+// todo: FIX, something goes wrong with saving the pdf file
+// Something something octet stream
 // Helper func to extract the uploaded resume file
 // and store it on the server. It returns the absolute path
 // to this file
