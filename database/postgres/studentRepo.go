@@ -87,7 +87,7 @@ func (s StudentRepo) FindAll() ([]d.Student, error) {
 
 	const selectQuery = `SELECT s.student_id, s.university, s.skills, s.experiences, s.short_experiences, 
 	s.wishes, s.status, s.resume, u.user_id, u.first_name, u.last_name, u.email, u.role 
-	FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id`
+	FROM "Student" s JOIN "User" u ON s.ref_user = u.user_id ORDER BY RANDOM();`
 
 	rows, err := tx.Query(selectQuery)
 	if err != nil {

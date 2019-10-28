@@ -21,7 +21,7 @@ func (p ProjectRepo) FindAll() ([]domain.Project, error) {
 
 	const selectQuery = `
 	SELECT project_id, description, duration, compensation, recommendations, ref_company 
-	FROM "Project";
+	FROM "Project" ORDER BY RANDOM();
 	`
 
 	rows, err := tx.Query(selectQuery)
