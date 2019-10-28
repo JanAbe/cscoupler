@@ -17,18 +17,22 @@ import (
 
 // Server struct, conveying the application
 type Server struct {
-	db                    *sql.DB
-	handlers              []handlers.Handler
+	db       *sql.DB
+	handlers []handlers.Handler
+
 	userService           ser.UserService
 	companyService        ser.CompanyService
-	inviteLinkService     ser.InviteLinkService
 	studentService        ser.StudentService
+	projectService        ser.ProjectService
+	inviteLinkService     ser.InviteLinkService
 	representativeService ser.RepresentativeService
-	userRepo              d.UserRepository
-	studentRepo           d.StudentRepository
-	companyRepo           d.CompanyRepository
-	representativeRepo    d.RepresentativeRepository
-	inviteLinkRepo        d.InviteLinkRepository
+
+	userRepo           d.UserRepository
+	studentRepo        d.StudentRepository
+	companyRepo        d.CompanyRepository
+	projectRepo        d.ProjectRepository
+	inviteLinkRepo     d.InviteLinkRepository
+	representativeRepo d.RepresentativeRepository
 }
 
 // NewServer creates a new server which can be run
@@ -52,7 +56,6 @@ func (s *Server) Run() {
 		AllowedMethods:   []string{"GET", "POST", "PUT"},
 	})
 	h := c.Handler(mux)
-	// h := cors.Default().Handler(mux)
 	log.Fatal(http.ListenAndServe(":3000", h))
 }
 
@@ -62,6 +65,7 @@ func (s *Server) initRepos() {
 	s.studentRepo = pg.StudentRepo{DB: s.db, UserRepo: s.userRepo.(pg.UserRepo)}
 	s.representativeRepo = pg.RepresentativeRepo{DB: s.db, UserRepo: s.userRepo.(pg.UserRepo)}
 	s.companyRepo = pg.CompanyRepo{DB: s.db, ReprRepo: s.representativeRepo.(pg.RepresentativeRepo)}
+	s.projectRepo = pg.ProjectRepo{DB: s.db}
 }
 
 func (s *Server) initServices() {
@@ -76,6 +80,7 @@ func (s *Server) initServices() {
 	}
 
 	s.companyService.ReprService = &s.representativeService
+	s.projectService = ser.ProjectService{ProjectRepo: s.projectRepo}
 }
 
 func (s *Server) initHandlers() {
@@ -103,8 +108,15 @@ func (s *Server) initHandlers() {
 		Path:                  "/representatives/",
 	}
 
+	projectHandler := handlers.ProjectHandler{
+		ProjectService: s.projectService,
+		AuthHandler:    authHandler,
+		Path:           "/projects/",
+	}
+
 	authHandler.Register()
 	studentHandler.Register()
 	companyHandler.Register()
 	representativeHandler.Register()
+	projectHandler.Register()
 }

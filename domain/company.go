@@ -115,6 +115,11 @@ type Project struct {
 	CompanyID       string
 }
 
+// ProjectRepository interface
+type ProjectRepository interface {
+	FindAll() ([]Project, error)
+}
+
 // NewProject creates a new Project based on the
 // provided input if all is valid, it returns
 // an error otherwise
