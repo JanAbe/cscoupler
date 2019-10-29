@@ -16,6 +16,7 @@ import (
 // a companyData struct
 func ToCompanyData(c d.Company) CompanyData {
 	companyData := CompanyData{
+		ID:          c.ID,
 		Name:        c.Name,
 		Information: c.Information,
 	}
@@ -47,6 +48,7 @@ func ToCompanyData(c d.Company) CompanyData {
 
 	for _, p := range c.Projects {
 		pData := ProjectData{
+			ID:              p.ID,
 			Description:     p.Description,
 			Compensation:    p.Compensation,
 			Duration:        p.Duration,

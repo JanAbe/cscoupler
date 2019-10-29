@@ -70,3 +70,13 @@ func (c CompanyService) AddProject(p domain.Project) error {
 
 	return nil
 }
+
+// FindAll finds all companies present
+func (c CompanyService) FindAll() ([]domain.Company, error) {
+	companies, err := c.CompanyRepo.FindAll()
+	if err != nil {
+		return []domain.Company{}, err
+	}
+
+	return companies, nil
+}

@@ -114,12 +114,19 @@ func (c CompanyRepo) FindAll() ([]d.Company, error) {
 	rows, err := tx.Query(selectIDSQuery)
 	defer rows.Close()
 
+	ids := []string{}
 	for rows.Next() {
 		var id string
 		if err := rows.Scan(&id); err != nil {
 			_ = tx.Rollback()
 			return []d.Company{}, err
 		}
+		ids = append(ids, id)
+	}
+
+	// added the extra ids slice because it wasn't possible
+	// to execute a new query inside the 'select all ids' query.
+	for _, id := range ids {
 		company, err := c.FindByIDTx(tx, id)
 		if err != nil {
 			return []d.Company{}, err

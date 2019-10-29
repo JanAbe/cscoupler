@@ -22,6 +22,7 @@ type CompanyHandler struct {
 
 // CompanyData is a struct that corresponds to incoming company data
 type CompanyData struct {
+	ID              string               `json:"id"`
 	Name            string               `json:"name"`
 	Information     string               `json:"information"`
 	Locations       []LocationData       `json:"locations"`
@@ -176,9 +177,33 @@ func (c CompanyHandler) FetchCompanyNameByID() http.Handler {
 	})
 }
 
+// FetchAllCompanies fetches all the companies
+func (c CompanyHandler) FetchAllCompanies() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" && r.Method != "OPTIONS" {
+			return
+		}
+
+		companies, err := c.CompanyService.FindAll()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+
+		var companiesData []CompanyData
+		for _, c := range companies {
+			companiesData = append(companiesData, ToCompanyData(c))
+		}
+
+		json.NewEncoder(w).Encode(companiesData)
+	})
+}
+
 // Register registers all company related handlers
 func (c CompanyHandler) Register() {
 	http.Handle(c.Path, LoggingHandler(os.Stdout, c.AuthHandler.Validate("", c.FetchCompanyByID())))
+	http.Handle(c.Path+"all", LoggingHandler(os.Stdout, c.AuthHandler.Validate("", c.FetchAllCompanies())))
 	http.Handle("/companies/name/", LoggingHandler(os.Stdout, c.FetchCompanyNameByID()))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
 }
