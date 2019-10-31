@@ -156,7 +156,7 @@ func (r RepresentativeHandler) FetchRepresentativeByID() http.Handler {
 // to colleagues.
 func (r RepresentativeHandler) MakeInviteLink() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if req.Method != "POST" {
+		if req.Method != "GET" {
 			return
 		}
 
