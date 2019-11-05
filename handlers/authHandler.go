@@ -37,6 +37,7 @@ type Claims struct {
 	ID     string
 	Email  string
 	UserID string
+	Role   string
 	jwt.StandardClaims
 }
 
@@ -86,6 +87,7 @@ func (a AuthHandler) Signin() http.Handler {
 			ID:     roleID,
 			Email:  user.Email,
 			UserID: user.ID,
+			Role:   user.Role,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: expirationTime.Unix(),
 			},
