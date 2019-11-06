@@ -23,8 +23,8 @@ func (c CompanyRepo) Create(company d.Company) error {
 		return err
 	}
 
-	const insertCompanyQuery = `INSERT INTO "Company"(company_id, name, information) VALUES ($1, $2, $3);`
-	_, err = tx.Exec(insertCompanyQuery, company.ID, company.Name, company.Information)
+	const insertCompanyQuery = `INSERT INTO "Company"(company_id, name, information, description) VALUES ($1, $2, $3, $4);`
+	_, err = tx.Exec(insertCompanyQuery, company.ID, company.Name, company.Information, company.Description)
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -40,6 +40,7 @@ func (c CompanyRepo) Create(company d.Company) error {
 			c.Number,
 			company.ID,
 		)
+
 		if err != nil {
 			_ = tx.Rollback()
 			return err

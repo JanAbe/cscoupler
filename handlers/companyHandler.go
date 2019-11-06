@@ -24,6 +24,7 @@ type CompanyHandler struct {
 type CompanyData struct {
 	ID              string               `json:"id"`
 	Name            string               `json:"name"`
+	Description     string               `json:"description"`
 	Information     string               `json:"information"`
 	Locations       []LocationData       `json:"locations"`
 	Representatives []RepresentativeData `json:"representatives"`
@@ -57,7 +58,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
-		company, err := domain.NewCompany(data.Name, data.Information)
+		company, err := domain.NewCompany(data.Name, data.Information, data.Description)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -127,8 +128,6 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
-		// todo: how does a representative gets his/her own id
-		fmt.Println(representative.ID)
 		json.NewEncoder(w).Encode(company.ID)
 	})
 }
