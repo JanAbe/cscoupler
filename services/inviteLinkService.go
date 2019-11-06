@@ -47,6 +47,16 @@ func (i InviteLinkService) FindByID(id string) (d.InviteLink, error) {
 	return inviteLink, nil
 }
 
+// FindByCreator fetches all inviteLinks that are created by the provided id
+func (i InviteLinkService) FindByCreator(representativeID string) ([]d.InviteLink, error) {
+	inviteLinks, err := i.InviteLinkRepo.FindByCreator(representativeID)
+	if err != nil {
+		return []d.InviteLink{}, err
+	}
+
+	return inviteLinks, nil
+}
+
 // Update updates the invitelink
 func (i InviteLinkService) Update(inviteLink d.InviteLink) error {
 	err := i.InviteLinkRepo.Update(inviteLink)

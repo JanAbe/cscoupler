@@ -56,6 +56,7 @@ func (r Representative) GenerateInviteLink(inviteLinkID, urlTemplate string) (In
 	return NewInviteLink(
 		inviteLinkID,
 		url,
+		r.ID,
 		false,
 		time.Hour*24,
 	), nil

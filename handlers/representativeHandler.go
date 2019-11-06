@@ -152,6 +152,35 @@ func (r RepresentativeHandler) FetchRepresentativeByID() http.Handler {
 	})
 }
 
+// FetchCreatedInvitations fetch all created invitations by the representative
+func (r RepresentativeHandler) FetchCreatedInvitations() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "GET" {
+			return
+		}
+
+		cookie, _ := req.Cookie("token")
+		token, _ := r.AuthHandler.GetToken(cookie)
+		representativeID := token.Claims.(jwt.MapClaims)["ID"].(string)
+
+		_, err := r.RepresentativeService.FindByID(representativeID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		invitations, err := r.InviteLinkService.FindByCreator(representativeID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		json.NewEncoder(w).Encode(invitations)
+	})
+}
+
 // MakeInviteLink makes an invite link for the representative to sent
 // to colleagues.
 func (r RepresentativeHandler) MakeInviteLink() http.Handler {
@@ -236,5 +265,6 @@ func (r RepresentativeHandler) Register() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate("", r.FetchRepresentativeByID())))
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))
 	http.Handle(r.Path+"invitelink/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.MakeInviteLink())))
+	http.Handle(r.Path+"invitations/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.FetchCreatedInvitations())))
 	http.Handle(r.Path+"projects/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.AddProject())))
 }

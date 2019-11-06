@@ -64,5 +64,6 @@ CREATE TABLE IF NOT EXISTS "Invite_Link" (
     url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     expiry_date TIMESTAMP,
-    used BOOLEAN NOT NULL
+    used BOOLEAN NOT NULL,
+    ref_representative UUID REFERENCES Representative (representative_id)
 );
