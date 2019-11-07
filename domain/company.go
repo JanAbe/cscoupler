@@ -23,6 +23,7 @@ type CompanyRepository interface {
 	FindByID(id string) (Company, error)
 	FindByName(name string) (Company, error)
 	AddProject(p Project) error
+	Update(company Company) error
 }
 
 // Company struct conveying a company
@@ -40,7 +41,7 @@ type Company struct {
 // NewCompany creates a new Company based on the
 // provided input if all input is valid, returning
 // an error otherwise
-func NewCompany(name, info, descr string) (Company, error) {
+func NewCompany(id, name, info, descr string) (Company, error) {
 	if len(strings.TrimSpace(name)) == 0 {
 		return Company{}, errors.New("provided name can't be empty")
 	}
@@ -54,7 +55,7 @@ func NewCompany(name, info, descr string) (Company, error) {
 	}
 
 	return Company{
-		ID:              uuid.New().String(),
+		ID:              id,
 		Name:            strings.ToLower(name),
 		Information:     strings.ToLower(info),
 		Description:     strings.ToLower(descr),
@@ -67,6 +68,7 @@ func NewCompany(name, info, descr string) (Company, error) {
 // Address struct conveying the addresses
 // a company has branches at
 type Address struct {
+	ID      string
 	Street  string
 	Zipcode string
 	City    string
@@ -76,7 +78,7 @@ type Address struct {
 // NewAddress creates a new Addres based on the
 // provided input if all input is valid, returning
 // an error otherwise
-func NewAddress(street, zipcode, city, number string) (Address, error) {
+func NewAddress(id, street, zipcode, city, number string) (Address, error) {
 	if len(strings.TrimSpace(street)) == 0 {
 		return Address{}, errors.New("provided street can't be empty")
 	}
@@ -95,6 +97,7 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 	}
 
 	return Address{
+		ID:      id,
 		Street:  strings.ToLower(street),
 		Zipcode: zipcode,
 		City:    strings.ToLower(city),

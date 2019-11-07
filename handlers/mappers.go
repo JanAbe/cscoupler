@@ -24,6 +24,7 @@ func ToCompanyData(c d.Company) CompanyData {
 
 	for _, l := range c.Locations {
 		locationData := LocationData{
+			ID:      l.ID,
 			Street:  l.Street,
 			Zipcode: l.Zipcode,
 			City:    l.City,

@@ -41,6 +41,16 @@ func (c CompanyService) FindByID(id string) (domain.Company, error) {
 	return company, nil
 }
 
+// Edit edits the companie's information
+func (c CompanyService) Edit(company domain.Company) error {
+	err := c.CompanyRepo.Update(company)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Exists checks if a company exists with the provided id
 func (c CompanyService) Exists(id string) bool {
 	_, err := c.FindByID(id)
