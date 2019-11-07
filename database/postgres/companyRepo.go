@@ -242,7 +242,7 @@ func (c CompanyRepo) UpdateTx(tx *sql.Tx, company d.Company) error {
 			p.Description,
 			p.Compensation,
 			p.Duration,
-			p.Recommendations,
+			pq.Array(p.Recommendations),
 			p.ID,
 		)
 
@@ -309,6 +309,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 			return d.Company{}, err
 		}
 		addresses = append(addresses, d.Address{
+			ID:      aID,
 			Street:  street,
 			Zipcode: zip,
 			City:    city,
