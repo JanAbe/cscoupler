@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
 	"github.com/janabe/cscoupler/services"
@@ -102,6 +103,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		}
 
 		representative, err := domain.NewRepresentative(
+			uuid.New().String(),
 			mainRepresentative.JobTitle,
 			company.ID,
 			user,

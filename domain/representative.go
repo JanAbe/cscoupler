@@ -5,14 +5,13 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // RepresentativeRepository interface
 type RepresentativeRepository interface {
 	Create(representative Representative) error
 	FindByID(id string) (Representative, error)
+	Update(representative Representative) error
 }
 
 // Representative struct conveying a
@@ -27,13 +26,13 @@ type Representative struct {
 }
 
 // NewRepresentative creates a new representative based on the provided input
-func NewRepresentative(jobTitle, companyID string, user User) (Representative, error) {
+func NewRepresentative(id, jobTitle, companyID string, user User) (Representative, error) {
 	if len(strings.TrimSpace(jobTitle)) == 0 {
 		return Representative{}, errors.New("provided jobTitle can't be empty")
 	}
 
 	return Representative{
-		ID:        uuid.New().String(),
+		ID:        id,
 		JobTitle:  strings.ToLower(jobTitle),
 		User:      user,
 		CompanyID: companyID,
