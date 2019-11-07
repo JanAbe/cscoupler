@@ -200,7 +200,7 @@ func (c CompanyHandler) EditCompany() http.Handler {
 		}
 
 		for _, p := range updatedCompanyData.Projects {
-			project, err := domain.NewProject(p.Description, p.Compensation, p.Duration, p.CompanyID, p.Recommendations)
+			project, err := domain.NewProject(p.ID, p.Description, p.Compensation, p.Duration, p.CompanyID, p.Recommendations)
 			if err != nil {
 				fmt.Println(err)
 				w.WriteHeader(http.StatusBadRequest)

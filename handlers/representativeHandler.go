@@ -240,11 +240,13 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 		}
 
 		project, err := repr.CreateProject(
+			uuid.New().String(),
 			data.Description,
 			data.Compensation,
 			data.Duration,
 			data.Recommendations,
 		)
+
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)

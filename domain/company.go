@@ -4,8 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // todo: look into which functions i want the different structs to have
@@ -132,7 +130,7 @@ type ProjectRepository interface {
 // NewProject creates a new Project based on the
 // provided input if all is valid, it returns
 // an error otherwise
-func NewProject(desc, comp, dur, companyID string, recs []string) (Project, error) {
+func NewProject(projectID, desc, comp, dur, companyID string, recs []string) (Project, error) {
 	if len(strings.TrimSpace(desc)) == 0 {
 		return Project{}, errors.New("provided description can't be empty")
 	}
@@ -146,7 +144,7 @@ func NewProject(desc, comp, dur, companyID string, recs []string) (Project, erro
 	}
 
 	return Project{
-		ID:              uuid.New().String(),
+		ID:              projectID,
 		Description:     strings.ToLower(desc),
 		Compensation:    strings.ToLower(comp),
 		Duration:        strings.ToLower(dur),
