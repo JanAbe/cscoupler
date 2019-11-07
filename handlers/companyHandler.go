@@ -159,7 +159,10 @@ func (c CompanyHandler) EditCompany() http.Handler {
 		// is an employee of this specific company
 		var worksForCompany bool
 		for _, r := range company.Representatives {
-			worksForCompany = r.ID == reprID
+			if r.ID == reprID {
+				worksForCompany = true
+				break
+			}
 		}
 
 		if !worksForCompany {

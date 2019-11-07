@@ -260,20 +260,20 @@ func (c CompanyRepo) UpdateTx(tx *sql.Tx, company d.Company) error {
 // This is the responsibility of the caller.
 // It will rollback and return an error if something goes wrong
 func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
-	var cID, info, name string
-	var street, zip, city, num string
+	var cID, info, cDescription, name string
+	var aID, street, zip, city, num string
 	var pID, desc, comp, dur string
 	var recommendations []string
 	var rID, jobTitle string
 	var uID, fname, lname, email, hash, role string
 
 	const selectCompanyQuery = `
-		SELECT c.company_id, c.information, c.name
+		SELECT c.company_id, c.description, c.information, c.name
 		FROM "Company" c
 		WHERE c.company_id = $1;
 	`
 	const selectAddressesQuery = `
-		SELECT a.street, a.zipcode, a.city, a.number
+		SELECT a.address_id, a.street, a.zipcode, a.city, a.number
 		FROM "Address" a
 		WHERE ref_company = $1;
 	`
@@ -289,7 +289,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, id)
-	err := companyResult.Scan(&cID, &info, &name)
+	err := companyResult.Scan(&cID, &cDescription, &info, &name)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Company{}, err
@@ -304,7 +304,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 	defer addressRows.Close()
 
 	for addressRows.Next() {
-		if err = addressRows.Scan(&street, &zip, &city, &num); err != nil {
+		if err = addressRows.Scan(&aID, &street, &zip, &city, &num); err != nil {
 			_ = tx.Rollback()
 			return d.Company{}, err
 		}
@@ -371,6 +371,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 		ID:              cID,
 		Name:            name,
 		Information:     info,
+		Description:     cDescription,
 		Locations:       addresses,
 		Representatives: representatives,
 		Projects:        projects,
