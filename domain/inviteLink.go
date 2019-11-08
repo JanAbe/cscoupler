@@ -9,6 +9,7 @@ type InviteLink struct {
 	URL        string
 	CreatedAt  time.Time
 	ExpiryDate time.Time
+	CreatedBy  string // id of representative that created the invitation
 
 	// keeps track if the link has been used or not
 	// This can be used to make sure a link can only gets used once
@@ -20,6 +21,7 @@ type InviteLinkRepository interface {
 	Create(inviteLink InviteLink) error
 	FindByID(id string) (InviteLink, error)
 	Update(inviteLink InviteLink) error
+	FindByCreator(representativeID string) ([]InviteLink, error)
 }
 
 // NewInviteLink creates a new InviteLink to be sent
@@ -27,7 +29,7 @@ type InviteLinkRepository interface {
 // the provided entity. InviteLinks are valid for the
 // amount of time specified by the validFor parameter
 // e.g. 24 hours -> time.Hour * 24
-func NewInviteLink(id, url string, used bool, validFor time.Duration) InviteLink {
+func NewInviteLink(id, url, createdBy string, used bool, validFor time.Duration) InviteLink {
 	// todo: add check to see if link is valid?
 	return InviteLink{
 		ID:         id,
@@ -35,6 +37,7 @@ func NewInviteLink(id, url string, used bool, validFor time.Duration) InviteLink
 		CreatedAt:  time.Now(),
 		ExpiryDate: time.Now().Add(validFor),
 		Used:       used,
+		CreatedBy:  createdBy,
 	}
 }
 

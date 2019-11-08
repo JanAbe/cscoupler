@@ -27,6 +27,16 @@ func (r RepresentativeService) Register(representative domain.Representative) er
 	return nil
 }
 
+// Edit edits the representative's information
+func (r RepresentativeService) Edit(representative domain.Representative) error {
+	err := r.RepresentativeRepo.Update(representative)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FindByID finds a representative based on id
 func (r RepresentativeService) FindByID(id string) (domain.Representative, error) {
 	repr, err := r.RepresentativeRepo.FindByID(id)

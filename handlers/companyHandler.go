@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
 	"github.com/janabe/cscoupler/services"
@@ -24,6 +26,7 @@ type CompanyHandler struct {
 type CompanyData struct {
 	ID              string               `json:"id"`
 	Name            string               `json:"name"`
+	Description     string               `json:"description"`
 	Information     string               `json:"information"`
 	Locations       []LocationData       `json:"locations"`
 	Representatives []RepresentativeData `json:"representatives"`
@@ -33,6 +36,7 @@ type CompanyData struct {
 // LocationData is a struct that corresponds to incoming location data
 // of companies
 type LocationData struct {
+	ID      string `json:"id"`
 	Street  string `json:"street"`
 	Zipcode string `json:"zipcode"`
 	City    string `json:"city"`
@@ -57,7 +61,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
-		company, err := domain.NewCompany(data.Name, data.Information)
+		company, err := domain.NewCompany(uuid.New().String(), data.Name, data.Information, data.Description)
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -65,7 +69,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		}
 
 		for _, l := range data.Locations {
-			location, err := domain.NewAddress(l.Street, l.Zipcode, l.City, l.Number)
+			location, err := domain.NewAddress(uuid.New().String(), l.Street, l.Zipcode, l.City, l.Number)
 			if err != nil {
 				fmt.Println(err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -101,6 +105,7 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 		}
 
 		representative, err := domain.NewRepresentative(
+			uuid.New().String(),
 			mainRepresentative.JobTitle,
 			company.ID,
 			user,
@@ -127,9 +132,92 @@ func (c CompanyHandler) SignupCompany() http.Handler {
 			return
 		}
 
-		// todo: how does a representative gets his/her own id
-		fmt.Println(representative.ID)
 		json.NewEncoder(w).Encode(company.ID)
+	})
+}
+
+// EditCompany edits the company account
+func (c CompanyHandler) EditCompany() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PUT" {
+			return
+		}
+
+		cookie, _ := r.Cookie("token")
+		token, _ := c.AuthHandler.GetToken(cookie)
+		reprID := token.Claims.(jwt.MapClaims)["ID"].(string)
+
+		companyID := strings.TrimPrefix(r.URL.Path, c.Path+"edit/")
+		company, err := c.CompanyService.FindByID(companyID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// Validate that the representative editing the company data
+		// is an employee of this specific company
+		var worksForCompany bool
+		for _, r := range company.Representatives {
+			if r.ID == reprID {
+				worksForCompany = true
+				break
+			}
+		}
+
+		if !worksForCompany {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		var updatedCompanyData CompanyData
+		err = json.NewDecoder(r.Body).Decode(&updatedCompanyData)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		updatedCompany, err := domain.NewCompany(companyID, updatedCompanyData.Name, updatedCompanyData.Information, updatedCompanyData.Description)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		for _, l := range updatedCompanyData.Locations {
+			location, err := domain.NewAddress(l.ID, l.Street, l.Zipcode, l.City, l.Number)
+			if err != nil {
+				fmt.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			updatedCompany.Locations = append(
+				updatedCompany.Locations,
+				location,
+			)
+		}
+
+		for _, p := range updatedCompanyData.Projects {
+			project, err := domain.NewProject(p.ID, p.Description, p.Compensation, p.Duration, p.CompanyID, p.Recommendations)
+			if err != nil {
+				fmt.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			updatedCompany.Projects = append(updatedCompany.Projects, project)
+		}
+
+		err = c.CompanyService.Edit(updatedCompany)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(updatedCompany.ID)
 	})
 }
 
@@ -206,4 +294,5 @@ func (c CompanyHandler) Register() {
 	http.Handle(c.Path+"all", LoggingHandler(os.Stdout, c.AuthHandler.Validate("", c.FetchAllCompanies())))
 	http.Handle("/companies/name/", LoggingHandler(os.Stdout, c.FetchCompanyNameByID()))
 	http.Handle("/signup/company", LoggingHandler(os.Stdout, c.SignupCompany()))
+	http.Handle(c.Path+"edit/", LoggingHandler(os.Stdout, c.AuthHandler.Validate("representative", c.EditCompany())))
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 
 	"github.com/janabe/cscoupler/domain"
 	e "github.com/janabe/cscoupler/errors"
@@ -88,6 +89,7 @@ func (r RepresentativeHandler) SignupRepresentative() http.Handler {
 		}
 
 		representative, err := domain.NewRepresentative(
+			uuid.New().String(),
 			data.JobTitle,
 			companyID,
 			user,
@@ -152,6 +154,35 @@ func (r RepresentativeHandler) FetchRepresentativeByID() http.Handler {
 	})
 }
 
+// FetchCreatedInvitations fetch all created invitations by the representative
+func (r RepresentativeHandler) FetchCreatedInvitations() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "GET" {
+			return
+		}
+
+		cookie, _ := req.Cookie("token")
+		token, _ := r.AuthHandler.GetToken(cookie)
+		representativeID := token.Claims.(jwt.MapClaims)["ID"].(string)
+
+		_, err := r.RepresentativeService.FindByID(representativeID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		invitations, err := r.InviteLinkService.FindByCreator(representativeID)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		json.NewEncoder(w).Encode(invitations)
+	})
+}
+
 // MakeInviteLink makes an invite link for the representative to sent
 // to colleagues.
 func (r RepresentativeHandler) MakeInviteLink() http.Handler {
@@ -209,11 +240,13 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 		}
 
 		project, err := repr.CreateProject(
+			uuid.New().String(),
 			data.Description,
 			data.Compensation,
 			data.Duration,
 			data.Recommendations,
 		)
+
 		if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -231,10 +264,75 @@ func (r RepresentativeHandler) AddProject() http.Handler {
 	})
 }
 
+// EditRepresentative edits the representative account with the new info
+func (r RepresentativeHandler) EditRepresentative() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "PUT" {
+			return
+		}
+
+		id := strings.TrimPrefix(req.URL.Path, r.Path+"edit/")
+		_, err := r.RepresentativeService.FindByID(id)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		var updatedRepresentativeData RepresentativeData
+
+		// check if json is invalid
+		err = json.NewDecoder(req.Body).Decode(&updatedRepresentativeData)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		updatedUser, err := domain.NewUser(
+			updatedRepresentativeData.UserData.Email,
+			updatedRepresentativeData.UserData.Password,
+			updatedRepresentativeData.UserData.Firstname,
+			updatedRepresentativeData.UserData.Lastname,
+			domain.RepresentativeRole,
+		)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		updatedRepresentative, err := domain.NewRepresentative(
+			id,
+			updatedRepresentativeData.JobTitle,
+			updatedRepresentativeData.CompanyID,
+			updatedUser,
+		)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = r.RepresentativeService.Edit(updatedRepresentative)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(updatedRepresentative.ID)
+	})
+}
+
 // Register registers all representative related handlers
 func (r RepresentativeHandler) Register() {
 	http.Handle(r.Path, LoggingHandler(os.Stdout, r.AuthHandler.Validate("", r.FetchRepresentativeByID())))
 	http.Handle("/signup"+r.Path+"invite/", LoggingHandler(os.Stdout, r.SignupRepresentative()))
 	http.Handle(r.Path+"invitelink/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.MakeInviteLink())))
+	http.Handle(r.Path+"invitations/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.FetchCreatedInvitations())))
 	http.Handle(r.Path+"projects/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.AddProject())))
+	http.Handle(r.Path+"edit/", LoggingHandler(os.Stdout, r.AuthHandler.Validate(domain.RepresentativeRole, r.EditRepresentative())))
 }

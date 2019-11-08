@@ -68,6 +68,27 @@ func (r RepresentativeRepo) FindByID(id string) (d.Representative, error) {
 	return representative, nil
 }
 
+// Update updates a representative in the DB. It should be used as a single unit of work,
+// as it has its own transaction inside.
+func (r RepresentativeRepo) Update(representative d.Representative) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = r.UpdateTx(tx, representative)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // CreateTx inserts a representative in the DB. It should be used as PART of a
 // unit of work, as a transaction gets passed in but will not be committed.
 // This is the responsibility of the caller.
@@ -85,6 +106,41 @@ func (r RepresentativeRepo) CreateTx(tx *sql.Tx, repr d.Representative) error {
 		repr.JobTitle,
 		repr.User.ID,
 		repr.CompanyID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+// UpdateTx updates a representative in the DB. It should be used as PART of
+// a unit of work, as a transaction gets passed in but will not be commited.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong.
+func (r RepresentativeRepo) UpdateTx(tx *sql.Tx, repr d.Representative) error {
+	const updateRepresentativeQuery = `UPDATE "Representative" r
+	SET job_title=$1 WHERE r.representative_id=$2;`
+
+	_, err := tx.Exec(updateRepresentativeQuery,
+		repr.JobTitle,
+		repr.ID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	const updateUserQuery = `UPDATE "User" u SET first_name=$1, last_name=$2, email=$3
+	WHERE u.user_id=(SELECT ref_user FROM "Student" WHERE student_id=$4);`
+	_, err = tx.Exec(updateUserQuery,
+		repr.User.FirstName,
+		repr.User.LastName,
+		repr.User.Email,
+		repr.ID,
 	)
 
 	if err != nil {

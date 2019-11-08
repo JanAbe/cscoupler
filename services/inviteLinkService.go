@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/google/uuid"
 	d "github.com/janabe/cscoupler/domain"
-	"github.com/janabe/cscoupler/util"
 )
 
 // InviteLinkService struct, containing all features
@@ -23,7 +22,7 @@ type InviteLinkService struct {
 func (i InviteLinkService) CreateRepresentativeInvite(path string, r d.Representative) (d.InviteLink, error) {
 	// todo: replace util.URL to the domain name of the client, otherwise the created invitelink
 	// points to the endpoint of the server and not to the front-end
-	urlTemplate := util.URL + "/signup" + path + "invite/<[companyID]>/<[inviteID]>"
+	urlTemplate := "/signup" + path + "invite/<[companyID]>/<[inviteID]>"
 	inviteLinkID := uuid.New().String()
 	inviteLink, err := r.GenerateInviteLink(inviteLinkID, urlTemplate)
 	if err != nil {
@@ -46,6 +45,16 @@ func (i InviteLinkService) FindByID(id string) (d.InviteLink, error) {
 	}
 
 	return inviteLink, nil
+}
+
+// FindByCreator fetches all inviteLinks that are created by the provided id
+func (i InviteLinkService) FindByCreator(representativeID string) ([]d.InviteLink, error) {
+	inviteLinks, err := i.InviteLinkRepo.FindByCreator(representativeID)
+	if err != nil {
+		return []d.InviteLink{}, err
+	}
+
+	return inviteLinks, nil
 }
 
 // Update updates the invitelink

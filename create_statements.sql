@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS "User" (
 CREATE TABLE IF NOT EXISTS "Company" (
     company_id UUID PRIMARY KEY,
     "name" TEXT NOT NULL,
-    information TEXT NOT NULL
+    information TEXT NOT NULL,
+    "description" TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "Student" (
@@ -64,5 +65,6 @@ CREATE TABLE IF NOT EXISTS "Invite_Link" (
     url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     expiry_date TIMESTAMP,
-    used BOOLEAN NOT NULL
+    used BOOLEAN NOT NULL,
+    ref_representative UUID REFERENCES Representative (representative_id)
 );
