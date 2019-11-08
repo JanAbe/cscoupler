@@ -53,7 +53,7 @@ func (s *Server) Run() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8080"},
 		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "PUT"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 	})
 	h := c.Handler(mux)
 	log.Fatal(http.ListenAndServe(":3000", h))

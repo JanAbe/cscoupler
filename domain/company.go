@@ -124,6 +124,8 @@ type Project struct {
 
 // ProjectRepository interface
 type ProjectRepository interface {
+	FindByID(id string) (Project, error)
+	Delete(id string) error
 	FindAll() ([]Project, error)
 }
 
