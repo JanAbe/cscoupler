@@ -5,7 +5,6 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/google/uuid"
 	d "github.com/janabe/cscoupler/domain"
 )
 
@@ -23,23 +22,24 @@ func (c CompanyRepo) Create(company d.Company) error {
 		return err
 	}
 
-	const insertCompanyQuery = `INSERT INTO "Company"(company_id, name, information) VALUES ($1, $2, $3);`
-	_, err = tx.Exec(insertCompanyQuery, company.ID, company.Name, company.Information)
+	const insertCompanyQuery = `INSERT INTO "Company"(company_id, name, information, description) VALUES ($1, $2, $3, $4);`
+	_, err = tx.Exec(insertCompanyQuery, company.ID, company.Name, company.Information, company.Description)
 	if err != nil {
 		_ = tx.Rollback()
 		return err
 	}
 
 	const insertAddressesQuery = `INSERT INTO "Address"(address_id, street, zipcode, city, number, ref_company) VALUES ($1, $2, $3, $4, $5, $6);`
-	for _, c := range company.Locations {
+	for _, l := range company.Locations {
 		_, err = tx.Exec(insertAddressesQuery,
-			uuid.New().String(),
-			c.Street,
-			c.Zipcode,
-			c.City,
-			c.Number,
+			l.ID,
+			l.Street,
+			l.Zipcode,
+			l.City,
+			l.Number,
 			company.ID,
 		)
+
 		if err != nil {
 			_ = tx.Rollback()
 			return err
@@ -176,25 +176,104 @@ func (c CompanyRepo) AddProject(p d.Project) error {
 	return nil
 }
 
+// Update updates a company in the DB. It should be used as a single unit of work
+// as it has its own transaction inside.
+func (c CompanyRepo) Update(company d.Company) error {
+	tx, err := c.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = c.UpdateTx(tx, company)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateTx updates a company in the DB. It should be used as PART of
+// a unit of work, as a transaction gets passed in but will not be commited.
+// This is the responsibility of the caller.
+// It will rollback and return an error if something goes wrong.
+func (c CompanyRepo) UpdateTx(tx *sql.Tx, company d.Company) error {
+	const updateCompanyQuery = `UPDATE "Company" c
+	SET name=$1, description=$2, information=$3 WHERE c.company_id=$4;`
+
+	_, err := tx.Exec(updateCompanyQuery,
+		company.Name,
+		company.Description,
+		company.Information,
+		company.ID,
+	)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	const updateLocationsQuery = `UPDATE "Address" a
+	SET street=$1, zipcode=$2, city=$3, number=$4 WHERE a.address_id=$5;`
+	for _, l := range company.Locations {
+		_, err := tx.Exec(updateLocationsQuery,
+			l.Street,
+			l.Zipcode,
+			l.City,
+			l.Number,
+			l.ID,
+		)
+
+		if err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+
+	const updateProjectsQuery = `UPDATE "Project" p
+	SET description=$1, compensation=$2, duration=$3, recommendations=$4
+	WHERE p.project_id=$5;`
+	for _, p := range company.Projects {
+		_, err := tx.Exec(updateProjectsQuery,
+			p.Description,
+			p.Compensation,
+			p.Duration,
+			pq.Array(p.Recommendations),
+			p.ID,
+		)
+
+		if err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+
+	return nil
+}
+
 // FindByIDTx finds a company in the DB based on id. It should be used as PART of a
 // unit of work, as a transaction gets passed in but will not be committed.
 // This is the responsibility of the caller.
 // It will rollback and return an error if something goes wrong
 func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
-	var cID, info, name string
-	var street, zip, city, num string
+	var cID, info, cDescription, name string
+	var aID, street, zip, city, num string
 	var pID, desc, comp, dur string
 	var recommendations []string
 	var rID, jobTitle string
 	var uID, fname, lname, email, hash, role string
 
 	const selectCompanyQuery = `
-		SELECT c.company_id, c.information, c.name
+		SELECT c.company_id, c.description, c.information, c.name
 		FROM "Company" c
 		WHERE c.company_id = $1;
 	`
 	const selectAddressesQuery = `
-		SELECT a.street, a.zipcode, a.city, a.number
+		SELECT a.address_id, a.street, a.zipcode, a.city, a.number
 		FROM "Address" a
 		WHERE ref_company = $1;
 	`
@@ -210,7 +289,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 		WHERE r.ref_company = $1;
 	`
 	companyResult := tx.QueryRow(selectCompanyQuery, id)
-	err := companyResult.Scan(&cID, &info, &name)
+	err := companyResult.Scan(&cID, &cDescription, &info, &name)
 	if err != nil {
 		_ = tx.Rollback()
 		return d.Company{}, err
@@ -225,11 +304,12 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 	defer addressRows.Close()
 
 	for addressRows.Next() {
-		if err = addressRows.Scan(&street, &zip, &city, &num); err != nil {
+		if err = addressRows.Scan(&aID, &street, &zip, &city, &num); err != nil {
 			_ = tx.Rollback()
 			return d.Company{}, err
 		}
 		addresses = append(addresses, d.Address{
+			ID:      aID,
 			Street:  street,
 			Zipcode: zip,
 			City:    city,
@@ -292,6 +372,7 @@ func (c CompanyRepo) FindByIDTx(tx *sql.Tx, id string) (d.Company, error) {
 		ID:              cID,
 		Name:            name,
 		Information:     info,
+		Description:     cDescription,
 		Locations:       addresses,
 		Representatives: representatives,
 		Projects:        projects,

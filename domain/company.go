@@ -4,8 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // todo: look into which functions i want the different structs to have
@@ -23,6 +21,7 @@ type CompanyRepository interface {
 	FindByID(id string) (Company, error)
 	FindByName(name string) (Company, error)
 	AddProject(p Project) error
+	Update(company Company) error
 }
 
 // Company struct conveying a company
@@ -30,7 +29,8 @@ type CompanyRepository interface {
 type Company struct {
 	ID              string
 	Name            string
-	Information     string
+	Information     string // Info about how internships work within the company
+	Description     string // Description about what the company mainly does
 	Locations       []Address
 	Representatives []Representative
 	Projects        []Project
@@ -39,7 +39,7 @@ type Company struct {
 // NewCompany creates a new Company based on the
 // provided input if all input is valid, returning
 // an error otherwise
-func NewCompany(name, info string) (Company, error) {
+func NewCompany(id, name, info, descr string) (Company, error) {
 	if len(strings.TrimSpace(name)) == 0 {
 		return Company{}, errors.New("provided name can't be empty")
 	}
@@ -48,10 +48,15 @@ func NewCompany(name, info string) (Company, error) {
 		return Company{}, errors.New("provided information can't be empty")
 	}
 
+	if len(strings.TrimSpace(descr)) == 0 {
+		return Company{}, errors.New("provided description can't be empty")
+	}
+
 	return Company{
-		ID:              uuid.New().String(),
+		ID:              id,
 		Name:            strings.ToLower(name),
 		Information:     strings.ToLower(info),
+		Description:     strings.ToLower(descr),
 		Locations:       []Address{},
 		Representatives: []Representative{},
 		Projects:        []Project{},
@@ -61,6 +66,7 @@ func NewCompany(name, info string) (Company, error) {
 // Address struct conveying the addresses
 // a company has branches at
 type Address struct {
+	ID      string
 	Street  string
 	Zipcode string
 	City    string
@@ -70,7 +76,7 @@ type Address struct {
 // NewAddress creates a new Addres based on the
 // provided input if all input is valid, returning
 // an error otherwise
-func NewAddress(street, zipcode, city, number string) (Address, error) {
+func NewAddress(id, street, zipcode, city, number string) (Address, error) {
 	if len(strings.TrimSpace(street)) == 0 {
 		return Address{}, errors.New("provided street can't be empty")
 	}
@@ -89,6 +95,7 @@ func NewAddress(street, zipcode, city, number string) (Address, error) {
 	}
 
 	return Address{
+		ID:      id,
 		Street:  strings.ToLower(street),
 		Zipcode: zipcode,
 		City:    strings.ToLower(city),
@@ -117,13 +124,15 @@ type Project struct {
 
 // ProjectRepository interface
 type ProjectRepository interface {
+	FindByID(id string) (Project, error)
+	Delete(id string) error
 	FindAll() ([]Project, error)
 }
 
 // NewProject creates a new Project based on the
 // provided input if all is valid, it returns
 // an error otherwise
-func NewProject(desc, comp, dur, companyID string, recs []string) (Project, error) {
+func NewProject(projectID, desc, comp, dur, companyID string, recs []string) (Project, error) {
 	if len(strings.TrimSpace(desc)) == 0 {
 		return Project{}, errors.New("provided description can't be empty")
 	}
@@ -137,7 +146,7 @@ func NewProject(desc, comp, dur, companyID string, recs []string) (Project, erro
 	}
 
 	return Project{
-		ID:              uuid.New().String(),
+		ID:              projectID,
 		Description:     strings.ToLower(desc),
 		Compensation:    strings.ToLower(comp),
 		Duration:        strings.ToLower(dur),

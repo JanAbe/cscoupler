@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS "User" (
 CREATE TABLE IF NOT EXISTS "Company" (
     company_id UUID PRIMARY KEY,
     "name" TEXT NOT NULL,
-    information TEXT NOT NULL
+    information TEXT NOT NULL,
+    "description" TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "Student" (
