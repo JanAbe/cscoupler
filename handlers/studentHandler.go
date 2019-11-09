@@ -244,7 +244,7 @@ func (s StudentHandler) Register() {
 	http.Handle(s.Path, LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchStudentByID())))
 	http.Handle(s.Path+"edit/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.StudentRole, s.EditStudent())))
 	http.Handle("/signup/student", LoggingHandler(os.Stdout, s.SignupStudent()))
-	http.Handle(s.Path+"all/", LoggingHandler(os.Stdout, s.AuthHandler.Validate("", s.FetchAllStudents())))
+	http.Handle(s.Path+"all/", LoggingHandler(os.Stdout, s.AuthHandler.Validate(domain.RepresentativeRole, s.FetchAllStudents())))
 }
 
 // todo: FIX, something goes wrong with saving the pdf file

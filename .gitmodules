@@ -1,0 +1,4 @@
+[submodule "cscoupler-client"]
+	path = cscoupler-client
+	url = git@github.com:JanAbe/cscoupler-client.git
+	branch = master

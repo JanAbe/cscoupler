@@ -1,3 +1,21 @@
+docker commands:
+
+[build the image]
+docker build -t cscoupler . 
+
+[run the image/container]
+docker run -it --rm -p 3000:3000 cscoupler
+
+[start postgres container with initialized db]
+docker run --rm --name db -v `pwd`/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=cscoupler -t -d postgres
+
+[connect to the db]
+docker run -it--rm --link db:db postgres psql -h db -U postgres -d cscoupler
+
+[! vpn should be turned off !]
+[run both containers]
+docker-compose up
+
 todo:
 can update company data and address data,
 but changing project data doesn't do anything.

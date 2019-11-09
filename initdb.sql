@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS "Representative" (
     representative_id UUID PRIMARY KEY,
     job_title TEXT NOT NULL,
     ref_user UUID REFERENCES "User" (user_id),
-    ref_company UUID REFERENCES Company (company_id)
+    ref_company UUID REFERENCES "Company" (company_id)
 );
 
 CREATE TABLE IF NOT EXISTS "Project" (
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS "Project" (
     compensation TEXT NOT NULL,
     duration TEXT NOT NULL,
     recommendations TEXT[],
-    ref_company UUID REFERENCES Company (company_id)
+    ref_company UUID REFERENCES "Company" (company_id)
 );
 
 CREATE TABLE IF NOT EXISTS "Message" (
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS "Message" (
     sender UUID REFERENCES "User" (user_id),
     receiver UUID REFERENCES "User" (user_id),
     body TEXT NOT NULL,
-    ref_project UUID REFERENCES Project (project_id)
+    ref_project UUID REFERENCES "Project" (project_id)
 );
 
 CREATE TABLE IF NOT EXISTS "Address" (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS "Address" (
     zipcode char(7) NOT NULL,
     city TEXT NOT NULL,
     "number" TEXT NOT NULL,
-    ref_company UUID REFERENCES Company (company_id)
+    ref_company UUID REFERENCES "Company" (company_id)
 );
 
 CREATE TABLE IF NOT EXISTS "Invite_Link" (
@@ -66,5 +66,5 @@ CREATE TABLE IF NOT EXISTS "Invite_Link" (
     created_at TIMESTAMP DEFAULT now(),
     expiry_date TIMESTAMP,
     used BOOLEAN NOT NULL,
-    ref_representative UUID REFERENCES Representative (representative_id)
+    ref_representative UUID REFERENCES "Representative" (representative_id)
 );
