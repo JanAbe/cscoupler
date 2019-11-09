@@ -6,6 +6,10 @@ services:
     restart: always
     ports:
       - 3000:3000
+  frontend:
+    build: ./cscoupler-client
+    image: cscoupler-client
+    ports: 8080:8080
   db:
     image: postgres
     environment:
