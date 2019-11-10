@@ -4,8 +4,11 @@ services:
     build: ./cscoupler-client
     hostname: cscoupler
     image: cscoupler-client
+    depends_on:
+      - backend
     ports: 
-      - 8080:80
+      - 8080:8080
+
   backend:
     build: .
     image: cscoupler
@@ -13,6 +16,7 @@ services:
       - db
     ports:
       - 3000:3000
+      
   db:
     image: postgres
     environment:

@@ -12,6 +12,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 FROM alpine:latest
 
+RUN mkdir resumes
 COPY --from=builder /go/src/github.com/janabe/cscoupler/.secret.json .
 COPY --from=builder /go/src/github.com/janabe/cscoupler/main .
 

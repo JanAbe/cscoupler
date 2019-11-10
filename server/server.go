@@ -51,7 +51,7 @@ func (s *Server) Run() {
 	// log.Fatal(http.ListenAndServeTLS(":3000", "./server/cert.pem", "./server/key.pem", nil))
 	mux := http.DefaultServeMux
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080"},
+		AllowedOrigins:   []string{"http://localhost:8080", "http://172.17.0.2:8080"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 	})
