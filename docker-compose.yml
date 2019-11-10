@@ -1,16 +1,18 @@
 version: '3.3'
 services:
+  frontend:
+    build: ./cscoupler-client
+    hostname: cscoupler
+    image: cscoupler-client
+    ports: 
+      - 8080:80
   backend:
     build: .
     image: cscoupler
-    restart: always
+    depends_on: 
+      - db
     ports:
       - 3000:3000
-  frontend:
-    build: ./cscoupler-client
-    image: cscoupler-client
-    ports: 
-      - 8080:8080
   db:
     image: postgres
     environment:
