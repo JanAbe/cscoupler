@@ -5,7 +5,9 @@ WORKDIR /cscoupler
 # copies the contents of the current dir (.) to the container destination
 ADD . /cscoupler
 
-RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN mkdir -p /root/.ssh
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+
 # get all dependencies
 RUN go get ./...
 
