@@ -4,9 +4,7 @@ A platform for companies and students to come in touch with one another, easing 
 
 ---
 
-#### Architecture
-
-##### Docker
+##### Docker (how to run it locally)
 To run the application locally, follow the following steps:
 Prerequisites: git, docker, docker-compose
 1. ```git clone --recurse-submodules git@github.com:JanAbe/cscoupler.git```
@@ -23,6 +21,8 @@ Prerequisites: git, docker, docker-compose
 6. Save and close the file
 7. Type ```docker-compose up``` in the terminal
 8. Navigate to http://localhost:8080
+
+#### Architecture
 
 ##### Frontend
 The frontend has been made using Vue.js and various tools
