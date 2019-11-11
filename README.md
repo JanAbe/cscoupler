@@ -47,3 +47,41 @@ In this package all the domain objects are defined aswell as the business rules.
 
 #### Database
 PostgreSQL is used to persist/store all data.
+
+### Images
+
+Student registration page
+![studentregistration](./assets/studentregistration.png)
+
+---
+
+Company registration page
+![companyregistration](./assets/companyregistration.png)
+
+---
+
+View all registered students, mark the ones you're interested in
+or filter based on skills, university or city of residence.
+![filterstudents](./assets/filterstudents.png)
+
+---
+
+Student profile page. Keep your skills, wishes and experiences
+up to date, to increase finding a great internship.
+![studentprofile](./assets/studentprofile.png)
+
+---
+
+Home page (not the whole page)
+![homepage1](./assets/homepage1.png)
+
+---
+
+Representative profile page. Update your data, create
+invitation to sent to your colleagues, and create new
+projects for which your are searching interns.
+![repraccount1](./assets/repraccount1.png)
+
+---
+
+![repraccount2](./assets/repraccount2.png)
