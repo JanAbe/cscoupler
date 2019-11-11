@@ -8,13 +8,21 @@ A platform for companies and students to come in touch with one another, easing 
 
 ##### Docker
 To run the application locally, follow the following steps:
-1. Download + install git
-2. Download + install docker
-3. Download + install docker-compose
-4. git clone this repository (git@github.com:JanAbe/cscoupler.git)
-5. cd into the newly created repository
-6. Open a terminal and type ```docker-compose up```
-7. Navigate to http://localhost:8080
+Prerequisites: git, docker, docker-compose
+1. ```git clone --recurse-submodules git@github.com:JanAbe/cscoupler.git```
+2. ```cd cscoupler```
+3. ```touch .secret.json```
+4. ```vim .secret.json```
+5. Add the following to the file: 
+``` 
+{
+    "jwtsecret": "[your-secret]",
+    "dsn": "host=db port=5432 user=postgres password=secret dbname=cscoupler sslmode=disable"
+} 
+```
+6. Save and close the file
+7. Type ```docker-compose up``` in the terminal
+8. Navigate to http://localhost:8080
 
 ##### Frontend
 The frontend has been made using Vue.js and various tools
